@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#c2410c">
+<title>AlurKit Kasir</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../icons/kasir-192.png">
+<link rel="apple-touch-icon" href="../icons/kasir-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kasir">
+<script src="../pwa.js" defer></script>
+
+<style>
+:root{--bg:#faf7f2;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e7e1d8;--acc:#c2410c;--acc2:#fff3ea;--ok:#15803d;--bad:#b91c1c;--r:12px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;-webkit-tap-highlight-color:transparent}
+.hidden{display:none!important}
+header{position:sticky;top:0;z-index:5;background:var(--acc);color:#fff;padding:10px 14px;display:flex;align-items:center;gap:10px}
+header .t{flex:1;min-width:0}header h1{font-size:16px}
+header small{opacity:.9;font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.iconbtn{background:rgba(255,255,255,.2);border:0;color:#fff;border-radius:10px;padding:8px 11px;font-size:17px}
+main{padding:12px 12px 120px;max-width:900px;margin:0 auto}
+body.hascart main{padding-bottom:56vh}
+nav{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:1px solid var(--line);display:flex;z-index:6;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:7px 2px 9px;font:inherit;font-size:11px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:1px;position:relative}
+nav button b{font-size:19px;font-weight:400}
+nav button.on{color:var(--acc);font-weight:700}
+nav .nb{position:absolute;top:3px;right:calc(50% - 22px);background:var(--bad);color:#fff;border-radius:999px;font-size:10px;padding:1px 5px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:12px;margin-bottom:10px}
+h2{font-size:17px;margin:4px 0 10px}h3{font-size:14px;margin:0 0 8px}
+.muted{color:var(--muted);font-size:13px;line-height:1.45}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:10px}
+.mbtn{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:12px 10px;text-align:left;min-height:88px;display:flex;flex-direction:column;justify-content:space-between;font:inherit;color:inherit;position:relative}
+.mbtn:active{transform:scale(.97);background:var(--acc2)}
+.mbtn .n{font-weight:600;font-size:14px;line-height:1.25;padding-right:22px}
+.mbtn .p{color:var(--acc);font-weight:700}
+.mbtn .s{font-size:11px;color:var(--muted)}
+.mbtn.habis{opacity:.4}
+.mbtn .q{position:absolute;top:6px;right:6px;background:var(--acc);color:#fff;border-radius:999px;min-width:22px;height:22px;font-size:12px;display:flex;align-items:center;justify-content:center;padding:0 6px;font-weight:700}
+#cart{position:fixed;left:0;right:0;bottom:56px;background:#fff;border-top:3px solid var(--acc);z-index:4;padding:10px 12px;max-height:50vh;overflow:auto;box-shadow:0 -6px 16px rgba(0,0,0,.08)}
+.btn{border:0;border-radius:10px;padding:12px 14px;font:inherit;font-weight:600;background:var(--acc);color:#fff}
+.btn.sec{background:#f3efe9;color:var(--ink)}.btn.ok{background:var(--ok)}.btn.bad{background:var(--bad)}
+.btn.sm{padding:7px 10px;font-size:13px}.btn:disabled{opacity:.35}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1}
+input,select{width:100%;font:inherit;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink)}
+label{display:block;font-size:13px;color:var(--muted);margin:8px 0 4px}
+label.cb{display:flex;gap:8px;align-items:center;color:var(--ink);font-size:14px;margin-top:10px}
+label.cb input{width:20px;height:20px;flex:0 0 20px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{padding:7px 4px;border-bottom:1px solid var(--line);text-align:right;vertical-align:top}
+th:first-child,td:first-child{text-align:left}
+th{color:var(--muted);font-weight:600}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:600}
+.b-proses{background:#fef3c7;color:#92400e}.b-siap{background:#dcfce7;color:#166534}.b-diambil{background:#e5e7eb;color:#374151}.b-batal{background:#fee2e2;color:#991b1b}
+.big{font-size:64px;font-weight:800;color:var(--acc);text-align:center;line-height:1}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.kpi div{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:10px;font-size:12px;color:var(--muted)}
+.kpi b{display:block;font-size:17px;margin-top:2px;color:var(--ink)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:16px 16px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:92vh;overflow:auto}
+#toast{position:fixed;left:50%;top:64px;transform:translateX(-50%);background:#111;color:#fff;padding:10px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90%;text-align:center}
+#toast.on{opacity:1}
+.chips{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font:inherit;font-size:13px;color:var(--ink)}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.line{display:flex;justify-content:space-between;align-items:center;padding:4px 0;gap:8px}
+.line.tot{font-weight:700;border-top:1px dashed var(--line);margin-top:4px;padding-top:8px}
+.line.sub{color:var(--muted);font-size:13px}
+.qtyc{display:flex;align-items:center;gap:6px}
+.qtyc button{width:32px;height:32px;border-radius:8px;border:1px solid var(--line);background:#fff;font-size:17px;color:var(--ink)}
+.warnbox{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:10px;padding:10px;font-size:13px;margin-bottom:10px;line-height:1.45}
+.pos{color:var(--ok)}.neg{color:var(--bad)}
+</style>
+</head>
+<body>
+<header>
+  <div class="t"><h1 id="hnama">Kasir</h1><small id="hsub"></small></div>
+  <button class="iconbtn hidden" id="lockbtn" data-act="lock" aria-label="Kunci mode pemilik">🔒</button>
+  <button class="iconbtn" data-act="tab" data-t="set" aria-label="Pengaturan">⚙️</button>
+</header>
+<main id="app"></main>
+<div id="cart" class="hidden"></div>
+<nav id="nav"></nav>
+<div id="modal" class="modal hidden"></div>
+<div id="toast"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ===== Konfigurasi ===== */
+const KEY = 'alurkit_kasir_v1';
+// laba:false = tidak mengurangi laba (sudah tercermin di HPP per porsi), tapi tetap mengurangi kas bila dibayar dari laci
+const KAT_BIAYA = [
+  {k:'bahan',    l:'Belanja bahan baku',     laba:false},
+  {k:'kemasan',  l:'Kemasan (di luar HPP)',  laba:true},
+  {k:'sewa',     l:'Sewa booth / tenant',    laba:true},
+  {k:'transport',l:'Transport',              laba:true},
+  {k:'gas',      l:'Gas / listrik / air',    laba:true},
+  {k:'upah',     l:'Upah harian',            laba:true},
+  {k:'lain',     l:'Lainnya',                laba:true}
+];
+// Menu contoh: [nama, harga jual, HPP per porsi, kategori] — ganti dengan angka asli
+const DEF_MENU = [
+  ['Pad Thai Ayam',30000,13000,'Makanan'],
+  ['Tom Yum Seafood',35000,16000,'Makanan'],
+  ['Nasi Pad Kra Pao Ayam',28000,12000,'Makanan'],
+  ['Nasi Goreng Thai',27000,11000,'Makanan'],
+  ['Green Curry Ayam + Nasi',32000,14000,'Makanan'],
+  ['Sayap Ayam Saus Thai',25000,11000,'Makanan'],
+  ['Mango Sticky Rice',25000,11000,'Dessert'],
+  ['Thai Tea',15000,5000,'Minuman'],
+  ['Thai Green Tea',15000,5000,'Minuman'],
+  ['Cha Manao (Teh Jeruk Nipis)',15000,5000,'Minuman']
+];
+// Jenis sesi: field terstruktur untuk membedakan laporan (nama sesi tetap teks bebas)
+const JENIS = [{k:'bazar', l:'Bazar / Event', s:'Bazar'}, {k:'toko', l:'Toko harian', s:'Toko'}];
+const jenisOf = k => JENIS.find(j => j.k === k) || JENIS[0];
+const LBL = {proses:'Diproses', siap:'Siap', diambil:'Diambil', batal:'Batal'};
+
+/* ===== Util ===== */
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rp = n => (n < 0 ? '-' : '') + 'Rp' + Math.abs(Math.round(n || 0)).toLocaleString('id-ID');
+const num = v => { const n = parseInt(String(v ?? '').replace(/[^\d]/g, ''), 10); return isNaN(n) ? 0 : n; };
+const numOrNull = v => String(v ?? '').trim() === '' ? null : num(v);
+const pad = n => String(n).padStart(2, '0');
+const tgl = ts => { const d = new Date(ts); return pad(d.getDate())+'/'+pad(d.getMonth()+1)+'/'+d.getFullYear(); };
+const jam = ts => { const d = new Date(ts); return pad(d.getHours())+':'+pad(d.getMinutes()); };
+const today = () => { const d = new Date(); return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const sum = (arr, f) => arr.reduce((a, x) => a + f(x), 0);
+const katOf = k => KAT_BIAYA.find(x => x.k === k) || KAT_BIAYA[KAT_BIAYA.length-1];
+
+/* ===== Penyimpanan (localStorage, dibungkus try/catch) ===== */
+let storageOk = true;
+function fresh(){
+  return {v:1, settings:{nama:'Warung Thai (contoh)', penutup:'Terima kasih, selamat menikmati!'},
+    menu: DEF_MENU.map(m => ({id:uid(), nama:m[0], harga:m[1], hpp:m[2], kat:m[3], aktif:true})),
+    sesi:[], orders:[], biaya:[], aktifSesiId:null};
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const d = JSON.parse(raw); if(d && Array.isArray(d.menu) && Array.isArray(d.sesi)) return d; }
+  }catch(e){ storageOk = false; }
+  return fresh();
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(S)); storageOk = true; }
+  catch(e){ storageOk = false; }
+}
+let S = load();
+S.sesi.forEach(x => { if(!x.jenis) x.jenis = 'bazar'; }); // migrasi: sesi lama dianggap Bazar
+save();
+
+/* ===== State UI ===== */
+let tab = 'kasir', cart = {}, cartNote = '', pf = 'aktif', rekapSid = null;
+let pendingConfirm = null, pendingNum = null, pendingPin = null, pendingPlan = null;
+
+/* ===== Mode pemilik (PIN) =====
+   Catatan jujur: ini menyembunyikan HPP dari pandangan pegawai, BUKAN enkripsi.
+   Orang yang paham teknis tetap bisa membaca data di browser. */
+let owner = false, idleT = null;
+const OWNER_IDLE = 10 * 60 * 1000; // kunci otomatis setelah 10 menit tidak dipakai
+const pinSet = () => !!S.settings.pinHash;
+const canCost = () => !pinSet() || owner; // boleh lihat HPP/laba/pengaturan?
+async function hashPin(pin, salt){
+  const txt = salt + ':' + pin;
+  try{
+    const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,'0')).join('');
+  }catch(e){ // cadangan kalau crypto.subtle tidak tersedia
+    let h = 2166136261; for(let r=0;r<500;r++) for(const c of txt + r){ h ^= c.charCodeAt(0); h = Math.imul(h, 16777619) >>> 0; }
+    return 'f' + h.toString(16);
+  }
+}
+function armIdle(){
+  clearTimeout(idleT);
+  if(owner && pinSet()) idleT = setTimeout(() => { lockOwner(); toast('Mode pemilik dikunci otomatis'); }, OWNER_IDLE);
+}
+function lockOwner(){ owner = false; clearTimeout(idleT); if(tab === 'set') tab = 'kasir'; closeModal(); render(); }
+function pinModal(onOk){
+  pendingPin = onOk;
+  openModal(`<h2>PIN pemilik</h2><p class="muted">Pengaturan, HPP, dan laba hanya untuk pemilik.</p>
+  <input id="pin-in" type="password" inputmode="numeric" maxlength="8" autocomplete="off" style="font-size:22px;letter-spacing:6px;text-align:center;margin-top:8px">
+  <div class="row" style="margin-top:12px"><button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="pinok">Masuk</button></div>
+  <p style="margin-top:14px;text-align:center"><button class="chip" data-act="lupapin">Lupa PIN?</button></p>`, true);
+}
+function setPinModal(){
+  openModal(`<h2>${pinSet()?'Ubah':'Pasang'} PIN pemilik</h2><p class="muted">4–8 angka. Jangan beri tahu pegawai kasir.</p>
+  <label>PIN baru</label><input id="pin1" type="password" inputmode="numeric" maxlength="8" autocomplete="off">
+  <label>Ulangi PIN</label><input id="pin2" type="password" inputmode="numeric" maxlength="8" autocomplete="off">
+  <div class="row" style="margin-top:12px"><button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="pinsave">Simpan PIN</button></div>`, true);
+}
+
+/* ===== Riwayat perubahan harga/HPP ===== */
+function logChange(m, old, sumber){
+  S.priceLog = S.priceLog || [];
+  if(old && old.harga === m.harga && old.hpp === m.hpp) return;
+  S.priceLog.push({waktu:Date.now(), nama:m.nama, baru:!old, hargaLama:old?old.harga:null, hargaBaru:m.harga, hppLama:old?old.hpp:null, hppBaru:m.hpp, sumber});
+  if(S.priceLog.length > 300) S.priceLog = S.priceLog.slice(-300);
+}
+
+/* ===== Import menu =====
+   Sumber yang dikenali:
+   1) Backup Kalkulator HPP (.json: {set, bahan, menu}) → HPP dihitung dengan rumus yang sama dengan Kalkulator
+   2) CSV export Kalkulator HPP (kolom Menu; HPP per porsi; Harga jual langsung)
+   3) Template CSV kasir (Nama; Kategori; Harga Jual; HPP per porsi; Aktif) */
+function parseCSV(text){
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0] || '';
+  const d = [';', '\t', ','].sort((a,b) => first.split(b).length - first.split(a).length)[0]; // deteksi pemisah
+  const rows = []; let row = [], f = '', q = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(q){ if(c === '"'){ if(text[i+1] === '"'){ f += '"'; i++; } else q = false; } else f += c; }
+    else if(c === '"') q = true;
+    else if(c === d){ row.push(f); f = ''; }
+    else if(c === '\n' || c === '\r'){ if(c === '\r' && text[i+1] === '\n') i++; row.push(f); rows.push(row); row = []; f = ''; }
+    else f += c;
+  }
+  if(f !== '' || row.length){ row.push(f); rows.push(row); }
+  return rows.filter(r => r.some(v => v.trim() !== ''));
+}
+const normH = s => String(s).toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const HDR = {nama:['nama','menu','nama menu'], harga:['harga','harga jual','harga jual langsung'], hpp:['hpp','hpp per porsi'], kat:['kategori','kat'], aktif:['aktif','tampil']};
+function parseAktif(v){
+  v = String(v || '').trim().toLowerCase();
+  if(['ya','y','1','true','aktif'].includes(v)) return true;
+  if(['tidak','t','0','false','nonaktif','no'].includes(v)) return false;
+  return null;
+}
+function rowsFromCSV(text){
+  const rows = parseCSV(text);
+  if(rows.length < 2) throw 'File kosong atau tidak ada data';
+  const h = rows[0].map(normH), idx = {};
+  for(const k in HDR) idx[k] = h.findIndex(x => HDR[k].includes(x));
+  if(idx.nama < 0) throw 'Kolom "Nama" / "Menu" tidak ditemukan';
+  if(idx.harga < 0 && idx.hpp < 0) throw 'Butuh kolom "Harga Jual" atau "HPP per porsi"';
+  const val = (r, k) => idx[k] >= 0 && String(r[idx[k]] ?? '').trim() !== '' ? r[idx[k]] : null;
+  return rows.slice(1).map((r, i) => ({baris:i+2, nama:String(r[idx.nama] ?? '').trim(),
+    harga: val(r,'harga') != null ? num(val(r,'harga')) : null,
+    hpp:   val(r,'hpp')   != null ? num(val(r,'hpp'))   : null,
+    kat:   val(r,'kat')   != null ? String(val(r,'kat')).trim() : null,
+    aktif: val(r,'aktif') != null ? parseAktif(val(r,'aktif')) : null}));
+}
+function rowsFromKalk(d){
+  // Rumus identik dengan Kalkulator HPP: bahan/porsi + overhead% × bahan/porsi + kemasan/porsi
+  const n = v => { const x = parseFloat(String(v ?? '').replace(',', '.')); return isFinite(x) ? x : 0; };
+  const unit = b => n(b.qty) > 0 ? n(b.harga) / n(b.qty) : 0;
+  const oh = n(d.set && d.set.oh);
+  return d.menu.map((m, i) => {
+    let bahan = 0, kem = 0;
+    (m.items || []).forEach(it => {
+      const b = d.bahan.find(x => x.id === it.bahanId); if(!b) return;
+      const c = unit(b) * n(it.qty);
+      if(b.kat === 'kemasan') kem += c; else bahan += c;
+    });
+    const y = Math.max(1, n(m.yield) || 1), bp = bahan / y;
+    return {baris:i+1, nama:String(m.nama || '').trim(), hpp:Math.round(bp + kem / y + bp * oh / 100),
+      harga: n(m.harga) > 0 ? Math.round(n(m.harga)) : null, kat:null, aktif:null};
+  });
+}
+const nkey = s => String(s).toLowerCase().replace(/\s+/g, ' ').trim();
+function buildPlan(rows, sumber){
+  const key = nkey;
+  const seen = new Set(), plan = {baru:[], ubah:[], sama:0, lewat:[], sumber};
+  for(const r of rows){
+    if(!r.nama){ plan.lewat.push('Baris ' + r.baris + ': nama kosong'); continue; }
+    const k = key(r.nama);
+    if(seen.has(k)){ plan.lewat.push(r.nama + ': nama ganda di file'); continue; }
+    seen.add(k);
+    if(r.harga === 0) r.harga = null;
+    // cocok lewat nama, atau lewat alias (nama di Kalkulator yang pernah dipasangkan)
+    const m = S.menu.find(x => key(x.nama) === k || (x.alias || []).includes(k));
+    if(!m){
+      if(r.harga == null){ plan.lewat.push(r.nama + ': menu baru tanpa harga jual'); continue; }
+      plan.baru.push(r); continue;
+    }
+    const ch = {};
+    if(r.harga != null && r.harga !== m.harga) ch.harga = r.harga;
+    if(r.hpp != null && r.hpp !== m.hpp) ch.hpp = r.hpp;
+    if(r.kat && r.kat !== m.kat) ch.kat = r.kat;
+    if(r.aktif != null && r.aktif !== m.aktif) ch.aktif = r.aktif;
+    if(Object.keys(ch).length) plan.ubah.push({m, ch}); else plan.sama++;
+  }
+  return plan;
+}
+function previewModal(plan){
+  pendingPlan = plan;
+  const total = plan.baru.length + plan.ubah.length;
+  const fmtCh = (m, ch) => [
+    ch.harga != null ? `Harga ${rp(m.harga)} → <b>${rp(ch.harga)}</b>` : '',
+    ch.hpp != null ? `HPP ${rp(m.hpp)} → <b>${rp(ch.hpp)}</b>` : '',
+    ch.kat ? 'Kategori → ' + esc(ch.kat) : '',
+    ch.aktif != null ? (ch.aktif ? 'Diaktifkan' : 'Dinonaktifkan') : ''].filter(Boolean).join(' · ');
+  const item = h => `<div style="padding:7px 0;border-bottom:1px solid var(--line)">${h}</div>`;
+  openModal(`<h2>Pratinjau import</h2><p class="muted">Sumber: ${esc(plan.sumber)}</p>
+  <div class="kpi" style="grid-template-columns:repeat(4,1fr);margin-top:8px"><div>Baru<b>${plan.baru.length}</b></div><div>Berubah<b>${plan.ubah.length}</b></div><div>Sama<b>${plan.sama}</b></div><div>Lewat<b>${plan.lewat.length}</b></div></div>
+  ${plan.ubah.length ? '<h3>Berubah</h3>' + plan.ubah.map(({m,ch}) => item(`<b>${esc(m.nama)}</b><br><span class="muted">${fmtCh(m,ch)}</span>${(ch.hpp ?? m.hpp) >= (ch.harga ?? m.harga) ? '<br><span class="neg">⚠️ HPP ≥ harga jual</span>' : ''}`)).join('') : ''}
+  ${plan.baru.length ? '<h3 style="margin-top:10px">Tidak cocok dengan menu kasir</h3><p class="muted">Kalau namanya beda tulisan, pasangkan ke menu yang ada — pilihan ini diingat untuk import berikutnya.</p>' + plan.baru.map((r, i) => item(`<b>${esc(r.nama)}</b><br><span class="muted">Harga ${rp(r.harga)} · HPP ${r.hpp == null ? '<span class="neg">kosong (dianggap 0)</span>' : rp(r.hpp)}</span>
+    <select data-map="${i}" style="margin-top:6px;padding:8px"><option value="">➕ Tambah sebagai menu baru</option>${S.menu.map(m => `<option value="${m.id}">↪ Perbarui: ${esc(m.nama)}</option>`).join('')}</select>`)).join('') : ''}
+  <label class="cb"><input type="checkbox" id="imp-harga" checked><span>Perbarui juga harga jual dari file (hapus centang = hanya HPP)</span></label>
+  ${plan.lewat.length ? '<h3 style="margin-top:10px">Dilewati</h3>' + plan.lewat.map(x => `<div class="muted">• ${esc(x)}</div>`).join('') : ''}
+  ${sesiAktif() && total ? '<div class="warnbox" style="margin-top:10px">Ada sesi aktif. Perubahan hanya berlaku untuk transaksi berikutnya — transaksi yang sudah tercatat tetap memakai harga & HPP lama.</div>' : ''}
+  <div class="row" style="margin-top:12px"><button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="applyimport" ${total ? '' : 'disabled'}>Terapkan ${total} perubahan</button></div>`);
+}
+function doImport(file){
+  if(!file) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      const text = String(fr.result), t = text.replace(/^﻿/, '').trim();
+      let rows, sumber;
+      if(t.startsWith('{')){
+        const d = JSON.parse(t);
+        if(d && d.set && Array.isArray(d.bahan) && Array.isArray(d.menu)){ rows = rowsFromKalk(d); sumber = 'Backup Kalkulator HPP (' + file.name + ')'; }
+        else if(d && Array.isArray(d.menu) && Array.isArray(d.sesi)) throw 'Ini file backup Kasir — pakai tombol "Pulihkan"';
+        else throw 'Format JSON tidak dikenali';
+      } else { rows = rowsFromCSV(text); sumber = 'CSV (' + file.name + ')'; }
+      previewModal(buildPlan(rows, sumber));
+    }catch(e){ toast(typeof e === 'string' ? e : 'File tidak bisa dibaca'); }
+  };
+  fr.readAsText(file);
+}
+function quickModal(){
+  openModal(`<h2>Edit cepat harga & HPP</h2><p class="muted">Berlaku untuk transaksi berikutnya. Transaksi yang sudah tercatat tidak berubah.</p>
+  <table style="margin-top:8px"><thead><tr><th>Menu</th><th>Harga jual</th><th>HPP</th></tr></thead><tbody>
+  ${S.menu.map(m => `<tr><td>${esc(m.nama)}</td><td><input data-qh="${m.id}" inputmode="numeric" value="${m.harga}" style="padding:7px;width:90px"></td><td><input data-qp="${m.id}" inputmode="numeric" value="${m.hpp}" style="padding:7px;width:82px"></td></tr>`).join('')}
+  </tbody></table>
+  <div class="row" style="margin-top:12px"><button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="quicksave">Simpan</button></div>`);
+}
+
+/* ===== Logika sesi & stok ===== */
+const sesiAktif = () => S.sesi.find(s => s.id === S.aktifSesiId) || null;
+const menuById = id => S.menu.find(m => m.id === id);
+function terjual(sid, mid){
+  let q = 0;
+  for(const o of S.orders) if(o.sesiId === sid && o.status !== 'batal')
+    for(const it of o.items) if(it.menuId === mid) q += it.qty;
+  return q;
+}
+const wasteQty = (s, mid) => sum((s.wasteLog||[]).filter(w => w.menuId === mid), w => w.qty);
+function sisa(s, mid){
+  const a = s.stokAwal[mid];
+  if(a == null) return Infinity; // stok tidak dibatasi
+  return a + (s.tambah[mid]||0) - terjual(s.id, mid) - wasteQty(s, mid);
+}
+function hitung(s){
+  const ords = S.orders.filter(o => o.sesiId === s.id && o.status !== 'batal');
+  const pm = {};
+  let omzet=0, tunai=0, qris=0, hppJual=0;
+  for(const o of ords){
+    omzet += o.total;
+    if(o.metode === 'tunai') tunai += o.total; else qris += o.total;
+    for(const it of o.items){
+      hppJual += it.hpp * it.qty;
+      const p = pm[it.menuId] = pm[it.menuId] || {nama:it.nama, qty:0, omzet:0, hpp:0};
+      p.qty += it.qty; p.omzet += it.harga * it.qty; p.hpp += it.hpp * it.qty;
+    }
+  }
+  const hppWaste = sum(s.wasteLog||[], w => w.qty * w.hpp);
+  const bs = S.biaya.filter(b => b.sesiId === s.id);
+  const biayaOps   = sum(bs.filter(b => katOf(b.kat).laba), b => b.nominal);
+  const biayaBahan = sum(bs.filter(b => !katOf(b.kat).laba), b => b.nominal);
+  const biayaLaci  = sum(bs.filter(b => b.tunai), b => b.nominal);
+  const labaKotor = omzet - hppJual;
+  const labaBersih = labaKotor - hppWaste - biayaOps;
+  const kasSeharusnya = s.kasAwal + tunai - biayaLaci;
+  return {trx:ords.length, omzet, tunai, qris, hppJual, hppWaste, biayaOps, biayaBahan, biayaLaci, labaKotor, labaBersih, kasSeharusnya, perMenu:Object.values(pm).sort((a,b)=>b.qty-a.qty)};
+}
+
+/* ===== UI dasar ===== */
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('on'),2300); }
+function openModal(h, focus){
+  const m=$('#modal'); m.innerHTML='<div class="sheet">'+h+'</div>'; m.classList.remove('hidden');
+  if(focus) setTimeout(()=>{ const i=m.querySelector('input'); if(i) i.focus(); }, 60);
+}
+function closeModal(){ const m=$('#modal'); m.classList.add('hidden'); m.innerHTML=''; }
+function ask(msg, okLabel, fn, danger){
+  pendingConfirm = fn;
+  openModal(`<p style="font-size:15px;line-height:1.5">${msg}</p>
+  <div class="row" style="margin-top:16px"><button class="btn sec" data-act="close">Batal</button>
+  <button class="btn ${danger?'bad':''}" data-act="confirm">${okLabel}</button></div>`);
+}
+function numModal(title, desc, fn){
+  pendingNum = fn;
+  openModal(`<h2>${title}</h2><p class="muted">${desc}</p>
+  <label>Jumlah porsi</label><input id="nm-v" inputmode="numeric">
+  <label>Keterangan (opsional)</label><input id="nm-k">
+  <div class="row" style="margin-top:14px"><button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="numok">Simpan</button></div>`, true);
+}
+const noSesi = () => `<div class="card"><h2>Belum ada sesi aktif</h2><p class="muted">Buka sesi dulu di tab Kasir.</p></div>`;
+const storageWarn = () => storageOk ? '' : `<div class="warnbox">⚠️ Penyimpanan browser tidak tersedia. Data bisa hilang kalau halaman ditutup — ekspor backup di ⚙️ sebelum menutup.</div>`;
+
+/* ===== Render ===== */
+function render(){
+  const s = sesiAktif();
+  $('#hnama').textContent = S.settings.nama || 'Kasir';
+  $('#hsub').textContent = (pinSet() && owner ? '🔓 Mode Pemilik · ' : '') + (s ? ('Sesi: ' + s.nama + ' · No. berikut #' + s.nextNo) : 'Belum ada sesi dibuka');
+  $('#lockbtn').classList.toggle('hidden', !(pinSet() && owner));
+  const aktifCount = s ? S.orders.filter(o => o.sesiId === s.id && (o.status==='proses'||o.status==='siap')).length : 0;
+  const tabs = [['kasir','🧾','Kasir'],['pesanan','🔔','Pesanan'],['stok','📦','Stok'],['biaya','💸','Biaya'],['rekap','📊','Rekap']];
+  $('#nav').innerHTML = tabs.map(([k,i,l]) => `<button class="${tab===k?'on':''}" data-act="tab" data-t="${k}"><b>${i}</b>${l}${k==='pesanan'&&aktifCount?`<span class="nb">${aktifCount}</span>`:''}</button>`).join('');
+  const V = {kasir:vKasir, pesanan:vPesanan, stok:vStok, biaya:vBiaya, rekap:vRekap, set:vSet};
+  $('#app').innerHTML = V[tab]();
+  renderCart();
+  if(tab === 'biaya') updKatInfo();
+  if(tab === 'rekap') updSelisih();
+}
+
+/* --- Kasir --- */
+function vBukaSesi(){
+  const menus = S.menu.filter(m => m.aktif);
+  return storageWarn() + `<div class="card"><h2>Buka sesi jualan</h2>
+  <p class="muted">Satu sesi = satu hari jualan atau satu event. Transaksi, stok, dan biaya dicatat per sesi.</p>
+  <label>Jenis sesi</label><select id="bs-jenis">${JENIS.map(j => `<option value="${j.k}">${j.l}</option>`).join('')}</select>
+  <label>Nama sesi (keterangan bebas)</label><input id="bs-nama" value="Bazar ${today()}" data-auto="1">
+  <label>Kas awal (uang kembalian di laci)</label><input id="bs-kas" inputmode="numeric" placeholder="0">
+  <h3 style="margin-top:14px">Stok porsi awal</h3><p class="muted">Kosongkan kalau tidak mau dibatasi.</p>
+  ${menus.map(m => `<div class="row" style="margin-top:6px"><span style="flex:2;font-size:14px">${esc(m.nama)}</span><input data-stok="${m.id}" inputmode="numeric" placeholder="bebas"></div>`).join('')}
+  <button class="btn" style="width:100%;margin-top:14px" data-act="buka">Buka sesi</button></div>
+  ${S.sesi.length ? '<p class="muted" style="text-align:center">Sesi sebelumnya ada di tab Rekap.</p>' : ''}`;
+}
+function vKasir(){
+  const s = sesiAktif();
+  if(!s) return vBukaSesi();
+  const menus = S.menu.filter(m => m.aktif);
+  if(!menus.length) return `<div class="card muted">Belum ada menu aktif. Tambah di ⚙️ Pengaturan.</div>`;
+  const kats = [...new Set(menus.map(m => m.kat || 'Lainnya'))];
+  let h = storageWarn();
+  for(const k of kats){
+    h += `<h3>${esc(k)}</h3><div class="grid">`;
+    for(const m of menus.filter(x => (x.kat||'Lainnya') === k)){
+      const ss = sisa(s, m.id), inCart = cart[m.id] || 0, left = ss - inCart;
+      h += `<button class="mbtn ${left<=0?'habis':''}" data-act="add" data-id="${m.id}">
+        ${inCart?`<span class="q">${inCart}</span>`:''}
+        <span class="n">${esc(m.nama)}</span>
+        <span><span class="p">${rp(m.harga)}</span><br><span class="s">${ss===Infinity?'Stok bebas':(ss<=0?'HABIS':'Sisa '+ss)}</span></span></button>`;
+    }
+    h += '</div>';
+  }
+  return h;
+}
+function cartItems(){
+  return Object.entries(cart).filter(([,q]) => q > 0).map(([id,q]) => { const m = menuById(id); return m ? {m,q} : null; }).filter(Boolean);
+}
+const cartTotal = () => sum(cartItems(), x => x.m.harga * x.q);
+function renderCart(){
+  const c = $('#cart'), items = cartItems();
+  if(tab !== 'kasir' || !sesiAktif() || !items.length){ c.classList.add('hidden'); document.body.classList.remove('hascart'); return; }
+  c.classList.remove('hidden'); document.body.classList.add('hascart');
+  c.innerHTML = items.map(({m,q}) => `<div class="line"><span style="flex:1;font-size:14px">${esc(m.nama)}</span>
+    <span class="qtyc"><button data-act="dec" data-id="${m.id}">−</button><b>${q}</b><button data-act="add" data-id="${m.id}">+</button></span>
+    <span style="width:84px;text-align:right">${rp(m.harga*q)}</span></div>`).join('') +
+    `<input id="cnote" placeholder="Catatan (mis. pedas level 2, tanpa udang)" value="${esc(cartNote)}" style="margin:6px 0">
+    <div class="line tot"><span>Total</span><span style="font-size:18px">${rp(cartTotal())}</span></div>
+    <div class="row" style="margin-top:8px"><button class="btn sec" data-act="clear" style="flex:.6">Hapus</button>
+    <button class="btn" data-act="pay" data-m="tunai">💵 Tunai</button><button class="btn" data-act="pay" data-m="qris">📱 QRIS</button></div>`;
+}
+function payModal(metode){
+  const total = cartTotal();
+  if(metode === 'tunai'){
+    const sug = [...new Set([total, Math.ceil(total/10000)*10000, Math.ceil(total/50000)*50000, Math.ceil(total/100000)*100000])];
+    openModal(`<h2>Bayar tunai</h2>
+    <div class="line tot" style="border:0;font-size:20px"><span>Total</span><span>${rp(total)}</span></div>
+    <label>Uang diterima</label><input id="py-uang" inputmode="numeric">
+    <div class="chips">${sug.map((v,i) => `<button class="chip" data-act="quick" data-v="${v}">${i===0?'Uang pas':rp(v)}</button>`).join('')}</div>
+    <div class="line" style="font-size:18px"><span>Kembalian</span><b id="py-kembali">-</b></div>
+    <div class="row" style="margin-top:12px"><button class="btn sec" data-act="close">Batal</button>
+    <button class="btn ok" id="py-ok" data-act="simpan" data-m="tunai" disabled>Simpan</button></div>`, true);
+  } else {
+    openModal(`<h2>Bayar QRIS</h2>
+    <div class="line tot" style="border:0;font-size:20px"><span>Total</span><span>${rp(total)}</span></div>
+    <p class="muted">Minta pembeli scan QRIS. Pastikan notifikasi dana masuk sebelum menyimpan.</p>
+    <label class="cb"><input type="checkbox" id="py-cek"><span>Pembayaran sudah masuk</span></label>
+    <div class="row" style="margin-top:14px"><button class="btn sec" data-act="close">Batal</button>
+    <button class="btn ok" id="py-ok" data-act="simpan" data-m="qris" disabled>Simpan</button></div>`);
+  }
+}
+function updKembali(){
+  const i = $('#py-uang'); if(!i) return;
+  const k = num(i.value) - cartTotal();
+  $('#py-kembali').textContent = i.value === '' ? '-' : (k < 0 ? 'Kurang ' + rp(-k) : rp(k));
+  $('#py-kembali').className = k < 0 ? 'neg' : '';
+  $('#py-ok').disabled = i.value === '' || k < 0;
+}
+function simpanOrder(metode){
+  const s = sesiAktif(), items = cartItems();
+  if(!s || !items.length) return;
+  for(const {m,q} of items) if(sisa(s, m.id) < q){ toast('Stok ' + m.nama + ' tidak cukup'); return; }
+  const total = cartTotal();
+  let bayar = total, kembali = 0;
+  if(metode === 'tunai'){ bayar = num($('#py-uang').value); if(bayar < total){ toast('Uang kurang'); return; } kembali = bayar - total; }
+  const o = {id:uid(), sesiId:s.id, no:s.nextNo++, waktu:Date.now(),
+    items: items.map(({m,q}) => ({menuId:m.id, nama:m.nama, harga:m.harga, hpp:m.hpp, qty:q})), // snapshot harga & HPP saat jual
+    total, metode, bayar, kembali, catatan:cartNote.trim(), status:'proses'};
+  S.orders.push(o); save();
+  cart = {}; cartNote = '';
+  render(); suksesModal(o);
+}
+function suksesModal(o){
+  openModal(`<p class="muted" style="text-align:center">Nomor antrean</p><div class="big">${o.no}</div>
+  <p style="text-align:center;margin:8px 0 12px">${rp(o.total)} · ${o.metode==='tunai'?'Tunai':'QRIS'}</p>
+  ${o.metode==='tunai'?`<div class="card" style="text-align:center;background:var(--acc2)">Kembalian<br><b style="font-size:28px">${rp(o.kembali)}</b></div>`:''}
+  <label>No. WhatsApp pembeli (opsional, untuk struk)</label><input id="wa-no" inputmode="tel" placeholder="08xxxxxxxxxx">
+  <div class="row" style="margin-top:12px"><button class="btn sec" data-act="wa" data-id="${o.id}">Kirim struk WA</button><button class="btn" data-act="close">Selesai</button></div>`);
+}
+function struk(o){
+  const L = ['*' + (S.settings.nama || 'Kasir') + '*', 'No. Antrean: *' + o.no + '*', tgl(o.waktu) + ' ' + jam(o.waktu), '--------------------'];
+  for(const it of o.items) L.push(it.qty + 'x ' + it.nama + ' — ' + rp(it.qty * it.harga));
+  if(o.catatan) L.push('Catatan: ' + o.catatan);
+  L.push('--------------------', '*Total: ' + rp(o.total) + '*');
+  if(o.metode === 'tunai'){ L.push('Tunai: ' + rp(o.bayar), 'Kembali: ' + rp(o.kembali)); } else L.push('Bayar: QRIS');
+  if(o.status === 'batal') L.push('*DIBATALKAN*');
+  if(S.settings.penutup) L.push('', S.settings.penutup);
+  return L.join('\n');
+}
+function kirimWA(o, no){
+  let n = String(no || '').replace(/[^\d]/g, '');
+  if(n.startsWith('0')) n = '62' + n.slice(1);
+  // pakai <a> biasa (lebih andal daripada window.open di browser HP)
+  const a = document.createElement('a');
+  a.href = 'https://wa.me/' + n + '?text=' + encodeURIComponent(struk(o));
+  a.target = '_blank'; a.rel = 'noopener';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+/* --- Pesanan --- */
+function vPesanan(){
+  const s = sesiAktif(); if(!s) return noSesi();
+  const all = S.orders.filter(o => o.sesiId === s.id);
+  const aktif = all.filter(o => o.status==='proses' || o.status==='siap');
+  const list = pf === 'aktif' ? aktif.slice().sort((a,b) => a.no-b.no) : all.slice().sort((a,b) => b.no-a.no);
+  let h = `<div class="chips"><button class="chip ${pf==='aktif'?'on':''}" data-act="pf" data-v="aktif">Aktif (${aktif.length})</button><button class="chip ${pf==='semua'?'on':''}" data-act="pf" data-v="semua">Semua (${all.length})</button></div>`;
+  if(!list.length) return h + `<p class="muted">Tidak ada pesanan.</p>`;
+  for(const o of list){
+    h += `<div class="card"><div class="row" style="align-items:flex-start">
+      <div style="flex:0 0 70px"><div style="font-size:30px;font-weight:800;color:var(--acc)">#${o.no}</div><span class="badge b-${o.status}">${LBL[o.status]}</span></div>
+      <div><div class="muted">${jam(o.waktu)} · ${o.metode.toUpperCase()} · ${rp(o.total)}</div>
+      ${o.items.map(it => `<div>${it.qty}× ${esc(it.nama)}</div>`).join('')}
+      ${o.catatan?`<div class="muted">📝 ${esc(o.catatan)}</div>`:''}</div></div>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap">
+      ${o.status==='proses'?`<button class="btn ok sm" data-act="st" data-id="${o.id}" data-s="siap">Siap</button>`:''}
+      ${o.status==='siap'?`<button class="btn sm" data-act="st" data-id="${o.id}" data-s="diambil">Sudah diambil</button>`:''}
+      <button class="btn sec sm" data-act="wa" data-id="${o.id}">Struk WA</button>
+      ${o.status!=='batal'?`<button class="btn sec sm" data-act="batal" data-id="${o.id}" style="color:var(--bad)">Batalkan</button>`:''}</div></div>`;
+  }
+  return h;
+}
+
+/* --- Stok --- */
+function vStok(){
+  const s = sesiAktif(); if(!s) return noSesi();
+  const rows = S.menu.filter(m => m.aktif || s.stokAwal[m.id] != null || terjual(s.id, m.id) > 0).map(m => {
+    const a = s.stokAwal[m.id], t = terjual(s.id, m.id), w = wasteQty(s, m.id), ss = sisa(s, m.id);
+    return `<tr><td>${esc(m.nama)}<div class="row" style="margin-top:5px;gap:4px;flex-wrap:wrap">
+      <button class="btn sec sm" style="flex:0" data-act="stokadd" data-id="${m.id}">+ Tambah</button>
+      <button class="btn sec sm" style="flex:0" data-act="waste" data-id="${m.id}">Rusak/sisa</button></div></td>
+      <td>${a==null?'∞':a+(s.tambah[m.id]||0)}</td><td>${t}</td><td>${w}</td>
+      <td><b class="${ss!==Infinity&&ss<=3?'neg':''}">${ss===Infinity?'∞':ss}</b></td></tr>`;
+  }).join('');
+  return `<h2>Stok porsi – ${esc(s.nama)}</h2>
+  <div class="card" style="padding:6px 8px"><table><thead><tr><th>Menu</th><th>Masuk</th><th>Jual</th><th>Rusak</th><th>Sisa</th></tr></thead><tbody>${rows}</tbody></table></div>
+  <p class="muted">∞ = stok tidak dibatasi. "Rusak/sisa" untuk porsi terbuang, dimakan sendiri, atau sisa yang tidak bisa dijual lagi — HPP-nya tetap dihitung sebagai biaya.</p>`;
+}
+
+/* --- Biaya --- */
+function vBiaya(){
+  const s = sesiAktif(); if(!s) return noSesi();
+  const list = S.biaya.filter(b => b.sesiId === s.id).sort((a,b) => b.waktu-a.waktu);
+  return `<h2>Biaya & pengeluaran</h2><div class="card">
+  <label>Kategori</label><select id="by-kat">${KAT_BIAYA.map(k => `<option value="${k.k}">${k.l}</option>`).join('')}</select>
+  <p class="muted" id="by-info" style="margin-top:5px"></p>
+  <label>Nominal</label><input id="by-nom" inputmode="numeric" placeholder="0">
+  <label>Keterangan</label><input id="by-ket" placeholder="mis. es batu 2 bungkus">
+  <label class="cb"><input type="checkbox" id="by-laci" checked><span>Dibayar dari uang laci kasir</span></label>
+  <button class="btn" style="width:100%;margin-top:12px" data-act="addbiaya">Simpan biaya</button></div>
+  ${list.length ? `<div class="card">${list.map(b => `<div class="line" style="border-bottom:1px solid var(--line);padding:8px 0">
+    <span style="flex:1">${esc(katOf(b.kat).l)}${b.ket?' – '+esc(b.ket):''}<br><span class="muted">${jam(b.waktu)}${b.tunai?' · dari laci':''}${katOf(b.kat).laba?'':' · tidak mengurangi laba'}</span></span>
+    <b>${rp(b.nominal)}</b><button class="btn sec sm" style="flex:0" data-act="delbiaya" data-id="${b.id}">✕</button></div>`).join('')}</div>`
+  : '<p class="muted">Belum ada biaya di sesi ini.</p>'}`;
+}
+function updKatInfo(){
+  const sel = $('#by-kat'), info = $('#by-info'); if(!sel || !info) return;
+  info.textContent = katOf(sel.value).laba
+    ? 'Mengurangi laba bersih sesi ini.'
+    : 'Tidak mengurangi laba (bahan sudah dihitung lewat HPP per porsi), tapi tetap mengurangi kas kalau dibayar dari laci.';
+}
+
+/* --- Rekap --- */
+function vRekap(){
+  if(!S.sesi.length) return `<div class="card muted">Belum ada sesi.</div>`;
+  if(!rekapSid || !S.sesi.find(x => x.id === rekapSid)) rekapSid = (sesiAktif() || S.sesi[S.sesi.length-1]).id;
+  const s = S.sesi.find(x => x.id === rekapSid), r = hitung(s);
+  const margin = r.omzet ? Math.round(r.labaKotor / r.omzet * 100) : 0;
+  const sesiOpts = S.sesi.slice().reverse().map(x => `<option value="${x.id}" ${x.id===s.id?'selected':''}>[${jenisOf(x.jenis).s}] ${esc(x.nama)}${x.status==='buka'?' (aktif)':''}</option>`).join('');
+  let kas = `<div class="line"><span>Kas awal</span><span>${rp(s.kasAwal)}</span></div>
+    <div class="line"><span>+ Penjualan tunai</span><span>${rp(r.tunai)}</span></div>
+    <div class="line"><span>− Biaya dari laci</span><span>${rp(r.biayaLaci)}</span></div>
+    <div class="line tot"><span>Kas seharusnya</span><span id="rk-harus" data-v="${r.kasSeharusnya}">${rp(r.kasSeharusnya)}</span></div>`;
+  if(s.status === 'buka'){
+    kas += `<label>Hitung uang fisik di laci</label><input id="rk-fisik" inputmode="numeric" placeholder="0">
+    <div class="line"><span>Selisih</span><b id="rk-selisih">-</b></div>
+    <button class="btn" style="width:100%;margin-top:10px" data-act="tutup">Tutup sesi</button>`;
+  } else {
+    const sel = (s.kasFisik||0) - r.kasSeharusnya;
+    kas += `<div class="line"><span>Kas fisik (saat tutup)</span><span>${rp(s.kasFisik)}</span></div>
+    <div class="line"><span>Selisih</span><b class="${sel===0?'pos':'neg'}">${sel===0?'Pas ✔':(sel>0?'Lebih ':'Kurang ')+rp(Math.abs(sel))}</b></div>`;
+  }
+  return `<label style="margin-top:0">Pilih sesi</label><select id="rk-sesi" style="margin-bottom:8px">${sesiOpts}</select>
+  <div class="row" style="margin-bottom:10px"><span class="muted" style="flex:0 0 auto">Jenis sesi</span><select id="rk-jenis" style="padding:8px">${JENIS.map(j => `<option value="${j.k}" ${j.k===s.jenis?'selected':''}>${j.l}</option>`).join('')}</select></div>
+  <div class="kpi"><div>Omzet<b>${rp(r.omzet)}</b></div><div>Transaksi<b>${r.trx}</b></div><div>Tunai<b>${rp(r.tunai)}</b></div><div>QRIS<b>${rp(r.qris)}</b></div></div>
+  ${!canCost() ? `<div class="card muted">🔒 HPP & laba hanya tampil di Mode Pemilik (⚙️).</div>` : `<div class="card"><h3>Laba</h3>
+    <div class="line"><span>Omzet</span><span>${rp(r.omzet)}</span></div>
+    <div class="line"><span>− HPP porsi terjual</span><span>${rp(r.hppJual)}</span></div>
+    <div class="line tot"><span>Laba kotor <span class="muted">(${margin}%)</span></span><span>${rp(r.labaKotor)}</span></div>
+    <div class="line"><span>− HPP porsi rusak/sisa</span><span>${rp(r.hppWaste)}</span></div>
+    <div class="line"><span>− Biaya operasional</span><span>${rp(r.biayaOps)}</span></div>
+    <div class="line tot"><span>Laba bersih</span><span class="${r.labaBersih<0?'neg':'pos'}" style="font-size:18px">${rp(r.labaBersih)}</span></div>
+    ${r.biayaBahan?`<div class="line sub"><span>Info: belanja bahan (tidak masuk laba)</span><span>${rp(r.biayaBahan)}</span></div>`:''}
+    <p class="muted" style="margin-top:6px">Akurasi laba bergantung pada HPP per porsi di ⚙️ Pengaturan.</p></div>`}
+  <div class="card"><h3>Kas laci</h3>${kas}</div>
+  <div class="card" style="padding:6px 8px"><h3 style="padding:6px 4px 0">Penjualan per menu</h3>
+    ${r.perMenu.length ? `<table><thead><tr><th>Menu</th><th>Qty</th><th>Omzet</th>${canCost()?'<th>Laba kotor</th>':''}</tr></thead><tbody>
+    ${r.perMenu.map(p => `<tr><td>${esc(p.nama)}</td><td>${p.qty}</td><td>${rp(p.omzet)}</td>${canCost()?`<td>${rp(p.omzet-p.hpp)}</td>`:''}</tr>`).join('')}</tbody></table>`
+    : '<p class="muted" style="padding:4px">Belum ada penjualan.</p>'}</div>
+  <div class="row">${canCost()?'<button class="btn sec" data-act="csvtrx">Ekspor transaksi</button>':''}<button class="btn sec" data-act="csvbiaya">Ekspor biaya</button></div>
+  <p class="muted" style="margin-top:8px">File CSV (pemisah titik koma) bisa dibuka di Excel/Google Sheets.</p>`;
+}
+function updSelisih(){
+  const i = $('#rk-fisik'), out = $('#rk-selisih'); if(!i || !out) return;
+  if(i.value === ''){ out.textContent = '-'; out.className = ''; return; }
+  const sel = num(i.value) - Number($('#rk-harus').dataset.v);
+  out.textContent = sel === 0 ? 'Pas ✔' : (sel > 0 ? 'Lebih ' : 'Kurang ') + rp(Math.abs(sel));
+  out.className = sel === 0 ? 'pos' : 'neg';
+}
+
+/* --- Pengaturan --- */
+function vSet(){
+  if(!canCost()) return `<div class="card"><h2>🔒 Terkunci</h2><p class="muted">Pengaturan, HPP, dan laba hanya untuk pemilik.</p>
+    <button class="btn" style="width:100%;margin-top:10px" data-act="tab" data-t="set">Masukkan PIN</button></div>`;
+  const log = (S.priceLog || []).slice(-30).reverse();
+  const fmtLog = l => `<div style="padding:6px 0;border-bottom:1px solid var(--line);font-size:13px"><b>${esc(l.nama)}</b> <span class="muted">· ${tgl(l.waktu)} ${jam(l.waktu)} · ${l.sumber}</span><br>
+    ${l.baru ? `Menu baru · Harga ${rp(l.hargaBaru)} · HPP ${rp(l.hppBaru)}` :
+      [l.hargaLama !== l.hargaBaru ? `Harga ${rp(l.hargaLama)} → ${rp(l.hargaBaru)}` : '', l.hppLama !== l.hppBaru ? `HPP ${rp(l.hppLama)} → ${rp(l.hppBaru)}` : ''].filter(Boolean).join(' · ')}</div>`;
+  return `<h2>Pengaturan</h2>
+  ${pinSet() ? '' : `<div class="warnbox">Belum ada PIN pemilik — siapa pun yang memegang HP bisa melihat HPP dan laba. Pasang PIN (bagian bawah) sebelum HP dipegang pegawai.</div>`}
+  <div class="card"><label style="margin-top:0">Nama usaha (muncul di struk)</label><input id="st-nama" value="${esc(S.settings.nama)}">
+  <label>Pesan penutup struk</label><input id="st-pen" value="${esc(S.settings.penutup)}">
+  <button class="btn" style="width:100%;margin-top:10px" data-act="savesett">Simpan</button></div>
+  <div class="card"><div class="row"><h3 style="margin:0">Menu (${S.menu.length})</h3>
+  <button class="btn sec sm" style="flex:0;white-space:nowrap" data-act="quick">Edit cepat</button><button class="btn sm" style="flex:0;white-space:nowrap" data-act="editmenu" data-id="">+ Menu</button></div>
+  ${S.menu.map(m => `<div class="line" style="border-bottom:1px solid var(--line);padding:9px 0"><span style="flex:1">${esc(m.nama)}${m.aktif?'':' <span class="badge b-batal">nonaktif</span>'}<br>
+  <span class="muted">${esc(m.kat)} · Jual ${rp(m.harga)} · HPP ${rp(m.hpp)} · Margin ${m.harga?Math.round((m.harga-m.hpp)/m.harga*100):0}%</span></span>
+  <button class="btn sec sm" style="flex:0" data-act="editmenu" data-id="${m.id}">Ubah</button></div>`).join('')}
+  <p class="muted" style="margin-top:8px">HPP = biaya bahan + kemasan per porsi. Angka bawaan hanya contoh — ganti dengan hitunganmu.</p></div>
+  <div class="card"><h3>Import & update menu</h3>
+  <p class="muted">Pilih file <b>backup Kalkulator HPP (.json)</b>, CSV export Kalkulator HPP, atau template CSV. Menu dicocokkan berdasarkan nama: yang sudah ada diperbarui, yang belum ada ditambahkan. Ada pratinjau sebelum disimpan.</p>
+  <button class="btn" style="width:100%;margin-top:8px" data-act="importlocal">Ambil dari Kalkulator HPP di HP ini</button>
+  <div class="row" style="margin-top:8px"><button class="btn sec" data-act="import">Pilih file</button><button class="btn sec" data-act="template">Unduh template</button></div>
+  <input type="file" id="import-file" accept=".json,.csv,.txt,application/json,text/csv" class="hidden">
+  <p class="muted" style="margin-top:6px">Tip: unduh template → ubah harga di Excel/Sheets → import lagi. Isi angka rupiah bulat tanpa desimal.</p></div>
+  <div class="card"><h3>PIN pemilik</h3>
+  <p class="muted">${pinSet() ? 'PIN aktif. Kasir hanya melihat harga jual. Mode pemilik terkunci otomatis setelah 10 menit tidak dipakai, saat tombol 🔒 ditekan, atau saat halaman dibuka ulang.' : 'Pasang PIN supaya HPP, laba, pengaturan, dan backup tersembunyi dari pegawai kasir.'}</p>
+  <div class="row" style="margin-top:8px"><button class="btn ${pinSet()?'sec':''}" data-act="pinset">${pinSet()?'Ubah PIN':'Pasang PIN'}</button>${pinSet()?'<button class="btn sec" data-act="pindel">Hapus PIN</button>':''}</div>
+  <p class="muted" style="margin-top:6px">Ini penyembunyian dari pandangan, bukan enkripsi — orang yang paham teknis tetap bisa membaca data browser.</p></div>
+  <div class="card"><h3>Riwayat perubahan harga & HPP</h3>${log.length ? log.map(fmtLog).join('') : '<p class="muted">Belum ada perubahan.</p>'}</div>
+  <div class="card"><h3>Backup data</h3><p class="muted">Data hanya tersimpan di browser HP ini. Ekspor backup setiap selesai jualan, lalu simpan ke Google Drive/WA.</p>
+  <div class="row" style="margin-top:8px"><button class="btn sec" data-act="backup">Ekspor backup</button><button class="btn sec" data-act="restore">Pulihkan</button></div>
+  <input type="file" id="restore-file" accept=".json,application/json" class="hidden"></div>
+  <div class="card"><h3>Zona bahaya</h3><button class="btn bad" style="width:100%" data-act="reset">Hapus semua data</button></div>
+  <p class="muted" style="text-align:center">AlurKit Kasir v1.3</p>`;
+}
+function menuModal(id){
+  const m = id ? menuById(id) : {nama:'', harga:'', hpp:'', kat:'Makanan', aktif:true};
+  const kats = [...new Set(S.menu.map(x => x.kat).filter(Boolean))];
+  openModal(`<h2>${id?'Ubah':'Tambah'} menu</h2>
+  <label>Nama menu</label><input id="mn-nama" value="${esc(m.nama)}">
+  <label>Kategori</label><input id="mn-kat" list="mn-kats" value="${esc(m.kat)}"><datalist id="mn-kats">${kats.map(k => `<option value="${esc(k)}">`).join('')}</datalist>
+  <div class="row"><div><label>Harga jual</label><input id="mn-harga" inputmode="numeric" value="${m.harga}"></div>
+  <div><label>HPP per porsi</label><input id="mn-hpp" inputmode="numeric" value="${m.hpp}"></div></div>
+  <label class="cb"><input type="checkbox" id="mn-aktif" ${m.aktif?'checked':''}><span>Tampil di layar kasir</span></label>
+  <div class="row" style="margin-top:14px">${id?`<button class="btn bad" style="flex:.6" data-act="delmenu" data-id="${id}">Hapus</button>`:''}
+  <button class="btn sec" data-act="close">Batal</button><button class="btn" data-act="savemenu" data-id="${id||''}">Simpan</button></div>`);
+}
+
+/* --- Ekspor --- */
+function csv(rows){
+  return '﻿' + rows.map(r => r.map(v => { v = String(v ?? ''); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }).join(';')).join('\r\n');
+}
+function dl(name, content, type){
+  const blob = new Blob([content], {type});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast('File diunduh: ' + name);
+}
+const fname = s => s.nama.replace(/[^\w\-]+/g, '_').slice(0, 40);
+function exportTrx(s){
+  const rows = [['Jenis','Sesi','Tanggal','No','Jam','Status','Metode','Menu','Qty','Harga','Subtotal','HPP per porsi','HPP total','Catatan']];
+  for(const o of S.orders.filter(x => x.sesiId === s.id).sort((a,b) => a.no-b.no))
+    for(const it of o.items) rows.push([jenisOf(s.jenis).s, s.nama, tgl(o.waktu), o.no, jam(o.waktu), LBL[o.status], o.metode, it.nama, it.qty, it.harga, it.harga*it.qty, it.hpp, it.hpp*it.qty, o.catatan]);
+  for(const w of (s.wasteLog||[])) rows.push([jenisOf(s.jenis).s, s.nama, tgl(w.waktu), '', jam(w.waktu), 'Rusak/sisa', '', w.nama, w.qty, 0, 0, w.hpp, w.hpp*w.qty, w.ket||'']);
+  dl('transaksi_' + fname(s) + '.csv', csv(rows), 'text/csv;charset=utf-8');
+}
+function exportBiaya(s){
+  const rows = [['Jenis','Sesi','Tanggal','Jam','Kategori','Keterangan','Nominal','Dari laci','Mengurangi laba']];
+  for(const b of S.biaya.filter(x => x.sesiId === s.id)) rows.push([jenisOf(s.jenis).s, s.nama, tgl(b.waktu), jam(b.waktu), katOf(b.kat).l, b.ket, b.nominal, b.tunai?'Ya':'Tidak', katOf(b.kat).laba?'Ya':'Tidak']);
+  dl('biaya_' + fname(s) + '.csv', csv(rows), 'text/csv;charset=utf-8');
+}
+const backup = () => dl('alurkit-kasir-backup-' + today() + '.json', JSON.stringify(S), 'application/json');
+function doRestore(file){
+  if(!file) return;
+  const fr = new FileReader();
+  fr.onload = () => {
+    try{
+      const d = JSON.parse(fr.result);
+      if(!d || !Array.isArray(d.menu) || !Array.isArray(d.sesi) || !Array.isArray(d.orders)) throw 0;
+      ask('Pulihkan backup ini? Data di HP sekarang akan <b>diganti</b>.', 'Pulihkan', () => { S = d; save(); cart = {}; rekapSid = null; toast('Backup dipulihkan'); render(); }, true);
+    }catch(e){ toast('File backup tidak valid'); }
+  };
+  fr.readAsText(file);
+}
+
+/* ===== Event ===== */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if(!el){ if(e.target.id === 'modal') closeModal(); return; }
+  const a = el.dataset.act, id = el.dataset.id, s = sesiAktif();
+  // aksi yang membuka HPP/laba/data mentah: wajib mode pemilik bila PIN aktif
+  const OWNER_ONLY = ['importlocal','editmenu','savemenu','delmenu','quick','quicksave','import','template','applyimport','backup','restore','reset','savesett','csvtrx','pinset','pindel'];
+  if(OWNER_ONLY.includes(a) && !canCost()){ toast('Butuh Mode Pemilik (⚙️)'); return; }
+  switch(a){
+    case 'tab':
+      if(el.dataset.t === 'set' && !canCost()){ pinModal(() => { tab = 'set'; window.scrollTo(0,0); render(); }); break; }
+      tab = el.dataset.t; window.scrollTo(0,0); render(); break;
+    case 'lock': lockOwner(); toast('Mode pemilik dikunci'); break;
+    case 'pinok': {
+      const v = $('#pin-in').value;
+      hashPin(v, S.settings.pinSalt).then(h => {
+        if(h !== S.settings.pinHash){ toast('PIN salah'); $('#pin-in').value = ''; return; }
+        owner = true; armIdle(); const f = pendingPin; pendingPin = null; closeModal(); if(f) f(); else render();
+      });
+      break;
+    }
+    case 'lupapin':
+      ask('Reset PIN tanpa PIN lama?<br><br>Supaya HPP tetap rahasia, <b>semua data HPP akan dihapus</b>: HPP menu, HPP di transaksi & catatan rusak jadi 0, dan riwayat harga dihapus. Omzet, transaksi, stok, dan kas tetap aman.<br><br><span class="muted">Setelah itu import ulang HPP dari Kalkulator HPP.</span>',
+        'Reset PIN & hapus HPP', () => {
+          S.menu.forEach(m => m.hpp = 0);
+          S.orders.forEach(o => o.items.forEach(i => i.hpp = 0));
+          S.sesi.forEach(x => (x.wasteLog || []).forEach(w => w.hpp = 0));
+          S.priceLog = []; delete S.settings.pinHash; delete S.settings.pinSalt;
+          save(); owner = false; render(); toast('PIN direset, data HPP dihapus');
+        }, true);
+      break;
+    case 'pinset': setPinModal(); break;
+    case 'pinsave': {
+      const p1 = $('#pin1').value, p2 = $('#pin2').value;
+      if(!/^\d{4,8}$/.test(p1)){ toast('PIN harus 4–8 angka'); break; }
+      if(p1 !== p2){ toast('PIN tidak sama'); break; }
+      const salt = uid();
+      hashPin(p1, salt).then(h => { S.settings.pinSalt = salt; S.settings.pinHash = h; save(); owner = true; armIdle(); closeModal(); render(); toast('PIN disimpan'); });
+      break;
+    }
+    case 'pindel': ask('Hapus PIN? HPP dan laba akan terlihat oleh siapa pun yang memegang HP.', 'Hapus PIN', () => { delete S.settings.pinHash; delete S.settings.pinSalt; save(); render(); toast('PIN dihapus'); }, true); break;
+    case 'quick': quickModal(); break;
+    case 'quicksave': {
+      let n = 0, bad = 0;
+      for(const m of S.menu){
+        const ih = document.querySelector(`[data-qh="${m.id}"]`), ip = document.querySelector(`[data-qp="${m.id}"]`); if(!ih) continue;
+        const h = num(ih.value), p = num(ip.value);
+        if(h <= 0){ bad++; continue; }
+        if(h !== m.harga || p !== m.hpp){ const old = {harga:m.harga, hpp:m.hpp}; m.harga = h; m.hpp = p; logChange(m, old, 'edit cepat'); n++; }
+      }
+      save(); closeModal(); render(); toast(n + ' menu diperbarui' + (bad ? ' · ' + bad + ' dilewati (harga kosong)' : ''));
+      break;
+    }
+    case 'import': $('#import-file').click(); break;
+    case 'importlocal': { // Kalkulator HPP di domain yang sama → baca langsung, tanpa pindah file
+      let d = null; try{ d = JSON.parse(localStorage.getItem('hpp_fnb_v1')); }catch(e){}
+      if(!d || !d.set || !Array.isArray(d.menu) || !Array.isArray(d.bahan)){ toast('Data Kalkulator HPP belum ada di HP ini — buka & simpan menu di Kalkulator dulu'); break; }
+      previewModal(buildPlan(rowsFromKalk(d), 'Kalkulator HPP di HP ini')); break;
+    }
+    case 'template': {
+      const rows = [['Nama','Kategori','Harga Jual','HPP per porsi','Aktif']].concat(S.menu.map(m => [m.nama, m.kat, m.harga, m.hpp, m.aktif ? 'Ya' : 'Tidak']));
+      dl('template-menu-' + today() + '.csv', csv(rows), 'text/csv;charset=utf-8'); break;
+    }
+    case 'applyimport': {
+      const p = pendingPlan; if(!p) break;
+      const updHarga = $('#imp-harga') ? $('#imp-harga').checked : true;
+      const maps = p.baru.map((r, i) => { const s = document.querySelector(`[data-map="${i}"]`); return s ? s.value : ''; });
+      pendingPlan = null; let n = 0;
+      for(const {m, ch} of p.ubah){
+        const c = Object.assign({}, ch); if(!updHarga) delete c.harga;
+        if(Object.keys(c).length){ const old = {harga:m.harga, hpp:m.hpp}; Object.assign(m, c); logChange(m, old, 'import'); n++; }
+      }
+      p.baru.forEach((r, i) => {
+        const target = maps[i] ? menuById(maps[i]) : null;
+        if(target){ // dipasangkan ke menu yang ada → update + simpan alias
+          const old = {harga:target.harga, hpp:target.hpp};
+          if(r.hpp != null) target.hpp = r.hpp;
+          if(updHarga && r.harga != null) target.harga = r.harga;
+          target.alias = [...new Set([...(target.alias || []), nkey(r.nama)])];
+          logChange(target, old, 'import'); n++;
+        } else {
+          const m = {id:uid(), nama:r.nama, harga:r.harga, hpp:r.hpp ?? 0, kat:r.kat || 'Lainnya', aktif:r.aktif ?? true};
+          S.menu.push(m); logChange(m, null, 'import'); n++;
+        }
+      });
+      save(); closeModal(); render(); toast(n + ' perubahan diterapkan'); break;
+    }
+    case 'close': closeModal(); break;
+    case 'confirm': { const f = pendingConfirm; pendingConfirm = null; closeModal(); if(f) f(); break; }
+    case 'numok': {
+      const v = num($('#nm-v').value); if(v <= 0){ toast('Isi jumlah porsi'); break; }
+      const k = $('#nm-k').value.trim(), f = pendingNum; pendingNum = null; closeModal(); if(f) f(v, k); break;
+    }
+    case 'buka': {
+      const ns = {id:uid(), jenis:$('#bs-jenis').value, nama:$('#bs-nama').value.trim() || (jenisOf($('#bs-jenis').value).s + ' ' + today()), tanggal:today(), kasAwal:num($('#bs-kas').value),
+        stokAwal:{}, tambah:{}, wasteLog:[], nextNo:1, status:'buka', dibuka:Date.now(), ditutup:null, kasFisik:null};
+      document.querySelectorAll('[data-stok]').forEach(i => { const v = numOrNull(i.value); if(v != null) ns.stokAwal[i.dataset.stok] = v; });
+      S.sesi.push(ns); S.aktifSesiId = ns.id; save(); toast('Sesi dibuka'); render(); break;
+    }
+    case 'add': {
+      if(!s) break;
+      if(sisa(s, id) - (cart[id]||0) <= 0){ toast('Stok habis'); break; }
+      cart[id] = (cart[id]||0) + 1; render(); break;
+    }
+    case 'dec': cart[id] = (cart[id]||0) - 1; if(cart[id] <= 0) delete cart[id]; render(); break;
+    case 'clear': cart = {}; cartNote = ''; render(); break;
+    case 'pay': payModal(el.dataset.m); break;
+    case 'quick': $('#py-uang').value = el.dataset.v; updKembali(); break;
+    case 'simpan': simpanOrder(el.dataset.m); break;
+    case 'wa': { const o = S.orders.find(x => x.id === id); const w = $('#wa-no'); if(o) kirimWA(o, w ? w.value : ''); break; }
+    case 'pf': pf = el.dataset.v; render(); break;
+    case 'st': { const o = S.orders.find(x => x.id === id); if(o){ o.status = el.dataset.s; save(); render(); } break; }
+    case 'batal': {
+      const o = S.orders.find(x => x.id === id); if(!o) break;
+      ask(`Batalkan pesanan <b>#${o.no}</b> (${rp(o.total)})?<br><span class="muted">Stok dikembalikan dan omzet tidak dihitung.${o.metode==='tunai'?' Kembalikan uang tunai ke pembeli.':' Refund QRIS dilakukan manual.'}</span>`,
+        'Batalkan pesanan', () => { o.status = 'batal'; save(); toast('Pesanan #' + o.no + ' dibatalkan'); render(); }, true);
+      break;
+    }
+    case 'stokadd': {
+      const m = menuById(id);
+      numModal('Tambah stok', esc(m.nama) + ' — mis. restock dari dapur.', v => {
+        if(s.stokAwal[id] == null) s.stokAwal[id] = terjual(s.id, id) + wasteQty(s, id); // dari "bebas" jadi terbatas, mulai dari sisa 0
+        s.tambah[id] = (s.tambah[id]||0) + v; save(); toast('Stok ditambah ' + v); render();
+      });
+      break;
+    }
+    case 'waste': {
+      const m = menuById(id);
+      numModal('Catat porsi rusak/sisa', esc(m.nama) + ' — HPP-nya dihitung sebagai biaya.', (v, k) => {
+        const ss = sisa(s, id); if(ss !== Infinity && v > ss){ toast('Melebihi sisa stok (' + ss + ')'); return; }
+        s.wasteLog.push({menuId:id, nama:m.nama, qty:v, hpp:m.hpp, waktu:Date.now(), ket:k}); save(); toast('Dicatat'); render();
+      });
+      break;
+    }
+    case 'addbiaya': {
+      const nom = num($('#by-nom').value); if(nom <= 0){ toast('Isi nominal'); break; }
+      S.biaya.push({id:uid(), sesiId:s.id, waktu:Date.now(), kat:$('#by-kat').value, nominal:nom, tunai:$('#by-laci').checked, ket:$('#by-ket').value.trim()});
+      save(); toast('Biaya disimpan'); render(); break;
+    }
+    case 'delbiaya': ask('Hapus biaya ini?', 'Hapus', () => { S.biaya = S.biaya.filter(b => b.id !== id); save(); render(); }, true); break;
+    case 'tutup': {
+      const i = $('#rk-fisik');
+      if(i.value === ''){ toast('Isi dulu jumlah uang fisik di laci'); i.focus(); break; }
+      const fisik = num(i.value);
+      const aktif = S.orders.filter(o => o.sesiId === s.id && (o.status==='proses'||o.status==='siap')).length;
+      ask(`Tutup sesi <b>${esc(s.nama)}</b>?${aktif?`<br><span class="neg">Masih ada ${aktif} pesanan belum diambil.</span>`:''}<br><span class="muted">Setelah ditutup, sesi tidak bisa dipakai transaksi lagi.</span>`, 'Tutup sesi', () => {
+        s.kasFisik = fisik; s.status = 'tutup'; s.ditutup = Date.now(); S.aktifSesiId = null; save(); render();
+        openModal(canCost()
+          ? `<h2>Sesi ditutup ✔</h2><p class="muted">Simpan backup sekarang supaya data aman kalau HP bermasalah.</p>
+          <div class="row" style="margin-top:14px"><button class="btn sec" data-act="close">Nanti</button><button class="btn" data-act="backup">Ekspor backup</button></div>`
+          : `<h2>Sesi ditutup ✔</h2><p class="muted">Minta pemilik membuka ⚙️ dan mengekspor backup hari ini.</p>
+          <button class="btn" style="width:100%;margin-top:14px" data-act="close">OK</button>`);
+      });
+      break;
+    }
+    case 'csvtrx': exportTrx(S.sesi.find(x => x.id === rekapSid)); break;
+    case 'csvbiaya': exportBiaya(S.sesi.find(x => x.id === rekapSid)); break;
+    case 'savesett': S.settings.nama = $('#st-nama').value.trim() || 'Kasir'; S.settings.penutup = $('#st-pen').value.trim(); save(); toast('Disimpan'); render(); break;
+    case 'editmenu': menuModal(id); break;
+    case 'savemenu': {
+      const nama = $('#mn-nama').value.trim(), harga = num($('#mn-harga').value), hpp = num($('#mn-hpp').value);
+      if(!nama || harga <= 0){ toast('Nama dan harga wajib diisi'); break; }
+      const data = {nama, harga, hpp, kat:$('#mn-kat').value.trim() || 'Lainnya', aktif:$('#mn-aktif').checked};
+      if(id){ const m = menuById(id), old = {harga:m.harga, hpp:m.hpp}; Object.assign(m, data); logChange(m, old, 'manual'); }
+      else { const m = Object.assign({id:uid()}, data); S.menu.push(m); logChange(m, null, 'manual'); }
+      save(); closeModal(); toast(hpp >= harga ? '⚠️ HPP ≥ harga jual — cek lagi' : 'Menu disimpan'); render(); break;
+    }
+    case 'delmenu': ask('Hapus menu ini? Riwayat transaksi lama tetap tersimpan.', 'Hapus', () => { S.menu = S.menu.filter(m => m.id !== id); delete cart[id]; save(); render(); }, true); break;
+    case 'backup': backup(); break;
+    case 'restore': $('#restore-file').click(); break;
+    case 'reset': ask('Hapus <b>semua</b> data (menu, sesi, transaksi, biaya)? Tidak bisa dibatalkan. Ekspor backup dulu kalau perlu.', 'Hapus semua', () => { S = fresh(); save(); cart = {}; rekapSid = null; tab = 'kasir'; toast('Data direset'); render(); }, true); break;
+  }
+});
+document.addEventListener('input', e => {
+  const t = e.target;
+  if(t.id === 'cnote') cartNote = t.value;
+  else if(t.id === 'bs-nama') delete t.dataset.auto;
+  else if(t.id === 'py-uang') updKembali();
+  else if(t.id === 'rk-fisik') updSelisih();
+});
+document.addEventListener('change', e => {
+  const t = e.target;
+  if(t.id === 'py-cek') $('#py-ok').disabled = !t.checked;
+  else if(t.id === 'by-kat') updKatInfo();
+  else if(t.id === 'rk-sesi'){ rekapSid = t.value; render(); }
+  else if(t.id === 'rk-jenis'){ const x = S.sesi.find(y => y.id === rekapSid); if(x){ x.jenis = t.value; save(); toast('Jenis sesi diubah'); render(); } }
+  else if(t.id === 'bs-jenis'){ // ganti nama default selama belum diketik manual
+    const n = $('#bs-nama'); if(n && n.dataset.auto) n.value = jenisOf(t.value).s + ' ' + today(); }
+  else if(t.id === 'restore-file'){ doRestore(t.files[0]); t.value = ''; }
+  else if(t.id === 'import-file'){ doImport(t.files[0]); t.value = ''; }
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Enter' && e.target.id === 'pin-in'){ e.preventDefault(); const b = document.querySelector('[data-act=pinok]'); if(b) b.click(); }
+});
+// aktivitas apa pun memperpanjang mode pemilik
+['click','input','touchstart'].forEach(ev => document.addEventListener(ev, () => { if(owner) armIdle(); }, {passive:true, capture:true}));
+
+render();
+})();
+</script>
+</body>
+</html>

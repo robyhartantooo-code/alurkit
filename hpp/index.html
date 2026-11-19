@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>Kalkulator HPP F&amp;B</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="../icons/hpp-192.png">
+<link rel="apple-touch-icon" href="../icons/hpp-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HPP">
+<script src="../pwa.js" defer></script>
+
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#14171c;--mute:#6b7280;--line:#e3e6ea;--pri:#0f766e;--pri2:#e6f6f3;--red:#b42318;--amber:#b54708;--green:#067647}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;padding-bottom:84px}
+header{position:sticky;top:0;z-index:5;background:var(--pri);color:#fff;padding:14px 16px calc(14px)}
+header h1{margin:0;font-size:17px}header small{opacity:.85;font-size:12px}
+main{padding:12px;max-width:720px;margin:auto}
+h2{font-size:18px;margin:0 0 12px}h3{font-size:14px;margin:14px 0 8px;color:var(--mute);text-transform:uppercase;letter-spacing:.03em}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:10px}
+.card h3{margin-top:2px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+.stat b{display:block;font-size:18px}.stat span{font-size:12px;color:var(--mute)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--line);cursor:pointer}
+.row:first-of-type{border-top:0}
+.row .t{font-weight:600}.row .s{font-size:12px;color:var(--mute)}
+.tag{font-size:12px;padding:3px 8px;border-radius:99px;font-weight:600;white-space:nowrap}
+.tag.green{background:#ecfdf3;color:var(--green)}.tag.amber{background:#fffaeb;color:var(--amber)}.tag.red{background:#fef3f2;color:var(--red)}.tag.gray{background:#f2f4f7;color:var(--mute)}
+.red{color:var(--red)}.amber{color:var(--amber)}.green{color:var(--green)}.mute{color:var(--mute);font-size:13px}
+label{display:block;font-size:13px;color:var(--mute);margin:10px 0 0}
+input,select{width:100%;font:inherit;color:var(--ink);padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;margin-top:4px}
+input:focus,select:focus{outline:2px solid var(--pri);border-color:transparent}
+.btn{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 14px;background:var(--pri);color:#fff;cursor:pointer}
+.btn.ghost{background:var(--pri2);color:var(--pri)}.btn.danger{background:#fef3f2;color:var(--red)}
+.btn.block{width:100%;margin:6px 0}
+.search{margin:0 0 10px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;border:0;background:none;padding:9px 0 10px;font:inherit;font-size:12px;color:var(--mute)}
+nav button i{display:block;font-style:normal;font-size:19px}
+nav button.on{color:var(--pri);font-weight:700}
+#sheet{position:fixed;inset:0;z-index:10;background:rgba(0,0,0,.35);display:none;align-items:flex-end;justify-content:center}
+#sheet.open{display:flex}
+#sheet .panel{background:var(--bg);width:100%;max-width:720px;max-height:92vh;overflow:auto;border-radius:18px 18px 0 0;padding:16px 14px calc(16px + env(safe-area-inset-bottom))}
+.item{display:grid;grid-template-columns:1fr 104px 30px;gap:6px;align-items:center;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;margin-bottom:6px}
+.item select,.item input{margin:0;padding:8px}
+.item .qty{display:flex;align-items:center;gap:4px}.item .qty span{font-size:12px;color:var(--mute);min-width:24px}
+.item select{grid-column:1;grid-row:1}.item .qty{grid-column:2;grid-row:1}.item .x{grid-column:3;grid-row:1}
+.item .cost{grid-column:1/4;grid-row:2;font-size:12px;color:var(--mute)}
+.x{border:0;background:#fef3f2;color:var(--red);border-radius:8px;height:30px;font-size:18px}
+.hpp{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:14px 0 8px}
+.hpp div{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.hpp span{display:block;font-size:12px;color:var(--mute)}
+.hpp .tot{background:var(--pri);color:#fff;border:0}.hpp .tot span{color:#d1fae5}
+.tbl{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;border:1px solid var(--line);font-size:13px}
+.tbl th,.tbl td{padding:8px 6px;text-align:right;border-top:1px solid var(--line)}
+.tbl th{background:#f8fafb;font-size:11px;color:var(--mute);font-weight:600;border-top:0}
+.tbl td:first-child,.tbl th:first-child{text-align:left}
+.tbl td small{display:block;color:var(--mute);font-size:11px}
+.tbl tr.sub td{text-align:left;font-size:12px;background:#fbfcfc;border-top:0;padding-top:0}
+.actions{display:flex;gap:8px;margin-top:16px}.actions .btn{flex:1}
+.ch{display:grid;grid-template-columns:1fr 80px 34px;gap:6px;align-items:center;margin-top:6px}
+.ch input{margin:0}
+.unit{background:var(--pri2);color:var(--pri);border-radius:10px;padding:10px;margin-top:12px;font-weight:600}
+.seg{display:flex;gap:6px;margin-top:4px}.seg button{flex:1;font:inherit;padding:9px;border-radius:10px;border:1px solid var(--line);background:#fff}
+.seg button.on{background:var(--pri);color:#fff;border-color:var(--pri)}
+#toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#14171c;color:#fff;padding:10px 14px;border-radius:10px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20;max-width:90vw}
+#toast.on{opacity:1}
+.note{font-size:12px;color:var(--mute);line-height:1.5}
+</style>
+</head>
+<body>
+<header><h1>Kalkulator HPP &amp; Harga Jual</h1><small>Offline · data tersimpan di browser perangkat ini</small></header>
+<main id="view"></main>
+<nav>
+  <button data-tab="dash"><i>📊</i>Ringkasan</button>
+  <button data-tab="menu"><i>🍜</i>Menu</button>
+  <button data-tab="bahan"><i>🧺</i>Bahan</button>
+  <button data-tab="set"><i>⚙️</i>Pengaturan</button>
+</nav>
+<div id="sheet"><div class="panel" id="panel"></div></div>
+<div id="toast"></div>
+<input type="file" id="fileIn" accept="application/json,.json" hidden>
+
+<script>
+/* ===== Data & penyimpanan ===== */
+const KEY = 'hpp_fnb_v1';
+const uid = () => Math.random().toString(36).slice(2, 9);
+const rp = n => 'Rp' + Math.round(n || 0).toLocaleString('id-ID');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = v => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
+
+// Data contoh supaya langsung terlihat cara kerjanya. Harga hanya ilustrasi.
+function sample() {
+  const b = (nama, kat, harga, qty, sat) => ({ id: uid(), nama, kat, harga, qty, sat });
+  const bahan = [
+    b('Teh Thai bubuk', 'bahan', 65000, 500, 'gr'),
+    b('Susu kental manis', 'bahan', 13000, 370, 'gr'),
+    b('Susu evaporasi', 'bahan', 15000, 380, 'gr'),
+    b('Gula pasir', 'bahan', 17000, 1000, 'gr'),
+    b('Es batu', 'bahan', 3000, 1000, 'gr'),
+    b('Kwetiau', 'bahan', 20000, 1000, 'gr'),
+    b('Udang', 'bahan', 90000, 1000, 'gr'),
+    b('Pasta tom yum', 'bahan', 35000, 227, 'gr'),
+    b('Telur', 'bahan', 60000, 30, 'butir'),
+    b('Cup 16oz + tutup', 'kemasan', 45000, 50, 'pcs'),
+    b('Sedotan', 'kemasan', 10000, 100, 'pcs'),
+    b('Box paper makan', 'kemasan', 60000, 50, 'pcs'),
+  ];
+  const id = n => bahan.find(x => x.nama === n).id;
+  return {
+    set: {
+      // Fee marketplace di bawah ini PLACEHOLDER — ganti sesuai kontrak mitra masing-masing.
+      ch: [{ nama: 'Jual langsung', fee: 0 }, { nama: 'GoFood', fee: 20 }, { nama: 'GrabFood', fee: 20 }, { nama: 'ShopeeFood', fee: 20 }],
+      mA: 20, mO: 35, oh: 10, round: 500
+    },
+    bahan,
+    menu: [
+      { id: uid(), nama: 'Thai Tea (contoh)', yield: 10, harga: 15000, items: [
+        { bahanId: id('Teh Thai bubuk'), qty: 100 }, { bahanId: id('Susu kental manis'), qty: 185 },
+        { bahanId: id('Susu evaporasi'), qty: 190 }, { bahanId: id('Gula pasir'), qty: 150 },
+        { bahanId: id('Es batu'), qty: 1500 }, { bahanId: id('Cup 16oz + tutup'), qty: 10 }, { bahanId: id('Sedotan'), qty: 10 } ] },
+      { id: uid(), nama: 'Kwetiau Tom Yum (contoh)', yield: 1, harga: 25000, items: [
+        { bahanId: id('Kwetiau'), qty: 150 }, { bahanId: id('Udang'), qty: 80 }, { bahanId: id('Pasta tom yum'), qty: 20 },
+        { bahanId: id('Telur'), qty: 1 }, { bahanId: id('Box paper makan'), qty: 1 } ] },
+    ]
+  };
+}
+
+let S = null;
+try { S = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+if (!S || !Array.isArray(S.bahan) || !Array.isArray(S.menu)) S = sample();
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch (e) { toast('⚠️ Gagal menyimpan: penyimpanan browser tidak tersedia. Pakai Backup.'); }
+}
+
+/* ===== Rumus inti =====
+   Semua komposisi resep diisi untuk SATU KALI masak (batch), lalu dibagi jumlah porsi.
+   HPP/porsi = bahan/porsi + overhead% x bahan/porsi (gas, listrik, dll) + kemasan/porsi
+   Harga jual (marketplace memotong fee dari harga jual):
+     harga x (1 - fee) - HPP = margin x harga  →  harga = HPP / (1 - fee - margin)
+   Impas = margin 0. Margin dihitung terhadap harga jual (bukan markup terhadap HPP). */
+const unitPrice = b => (num(b.qty) > 0 ? num(b.harga) / num(b.qty) : 0);
+function calc(m) {
+  let bahan = 0, kemasan = 0;
+  (m.items || []).forEach(it => {
+    const b = S.bahan.find(x => x.id === it.bahanId); if (!b) return;
+    const c = unitPrice(b) * num(it.qty);
+    if (b.kat === 'kemasan') kemasan += c; else bahan += c;
+  });
+  const y = Math.max(1, num(m.yield) || 1);
+  const bahanP = bahan / y, kemasanP = kemasan / y, oh = bahanP * num(S.set.oh) / 100;
+  return { bahanP, kemasanP, oh, hpp: bahanP + kemasanP + oh };
+}
+const roundUp = x => { const r = num(S.set.round) || 1; return Math.ceil(x / r) * r; };
+function priceFor(hpp, fee, margin) {
+  const d = 1 - num(fee) / 100 - num(margin) / 100;
+  return d > 0 ? roundUp(hpp / d) : null;
+}
+function profit(price, hpp, fee) {
+  const net = price * (1 - num(fee) / 100);
+  return { profit: net - hpp, margin: price ? (net - hpp) / price * 100 : 0 };
+}
+const baseFee = () => (S.set.ch[0] ? num(S.set.ch[0].fee) : 0);
+const fmtP = x => (x == null ? '<span class="red">fee+margin ≥ 100%</span>' : rp(x));
+const cls = m => (m < 0 ? 'red' : m < num(S.set.mA) ? 'amber' : 'green');
+
+/* ===== Tampilan ===== */
+let tab = 'dash';
+function render() {
+  document.querySelectorAll('nav button').forEach(b => b.classList.toggle('on', b.dataset.tab === tab));
+  document.getElementById('view').innerHTML = ({ dash: vDash, menu: vMenu, bahan: vBahan, set: vSet })[tab]();
+  window.scrollTo(0, 0);
+}
+
+function menuRows() {
+  return S.menu.map(m => {
+    const c = calc(m);
+    return { m, c, p: num(m.harga) ? profit(num(m.harga), c.hpp, baseFee()) : null };
+  });
+}
+function badge(r) {
+  if (!r.p) return '<span class="tag gray">Belum ada harga</span>';
+  return `<span class="tag ${cls(r.p.margin)}">${r.p.margin.toFixed(1)}%</span>`;
+}
+function menuLine(r) {
+  return `<div class="row" data-open-menu="${r.m.id}"><div><div class="t">${esc(r.m.nama)}</div>
+    <div class="s">HPP ${rp(r.c.hpp)} · Jual ${num(r.m.harga) ? rp(r.m.harga) : '-'}${r.p ? ' · untung ' + rp(r.p.profit) : ''}</div></div>${badge(r)}</div>`;
+}
+
+function vDash() {
+  const rows = menuRows(), priced = rows.filter(r => r.p);
+  const avg = (arr, f) => (arr.length ? arr.reduce((a, r) => a + f(r), 0) / arr.length : 0);
+  const warn = rows.filter(r => !r.p || r.p.margin < num(S.set.mA));
+  return `<div class="grid">
+    <div class="stat"><b>${rows.length}</b><span>Menu</span></div>
+    <div class="stat"><b>${rp(avg(rows, r => r.c.hpp))}</b><span>Rata-rata HPP / porsi</span></div>
+    <div class="stat"><b>${rp(avg(priced, r => num(r.m.harga)))}</b><span>Rata-rata harga jual</span></div>
+    <div class="stat"><b class="${priced.length ? cls(avg(priced, r => r.p.margin)) : ''}">${avg(priced, r => r.p.margin).toFixed(1)}%</b><span>Rata-rata margin (jual langsung)</span></div>
+  </div>
+  <div class="card"><h3>Perlu dicek (margin &lt; ${num(S.set.mA)}%)</h3>
+    ${warn.length ? warn.map(menuLine).join('') : '<p class="mute">Semua menu di atas margin aman 👍</p>'}</div>
+  <div class="card"><h3>Semua menu</h3>${rows.length ? rows.map(menuLine).join('') : '<p class="mute">Belum ada menu.</p>'}</div>`;
+}
+
+function vMenu() {
+  const rows = menuRows();
+  return `<button class="btn block" data-act="new-menu">+ Menu baru</button>
+  <div class="card">${rows.length ? rows.map(menuLine).join('') : '<p class="mute">Belum ada menu. Tambahkan bahan dulu di tab Bahan, lalu buat menu.</p>'}</div>`;
+}
+
+let q = '';
+function vBahan() {
+  const list = S.bahan.filter(b => b.nama.toLowerCase().includes(q.toLowerCase()));
+  const used = id => S.menu.filter(m => m.items.some(i => i.bahanId === id)).length;
+  return `<button class="btn block" data-act="new-bahan">+ Bahan / kemasan baru</button>
+  <input class="search" id="q" placeholder="Cari bahan…" value="${esc(q)}">
+  <div class="card" id="blist">${list.length ? list.map(b => `<div class="row" data-open-bahan="${b.id}">
+    <div><div class="t">${esc(b.nama)} ${b.kat === 'kemasan' ? '<span class="tag gray">kemasan</span>' : ''}</div>
+    <div class="s">${rp(b.harga)} / ${num(b.qty).toLocaleString('id-ID')} ${esc(b.sat)} · dipakai ${used(b.id)} menu</div></div>
+    <b>${rp(unitPrice(b) < 10 ? unitPrice(b) : unitPrice(b))}<span class="mute">/${esc(b.sat)}</span></b></div>`).join('') : '<p class="mute">Tidak ada bahan.</p>'}</div>
+  <p class="note">Ubah harga beli bahan di sini → HPP & rekomendasi harga semua menu yang memakainya ikut terhitung ulang.</p>`;
+}
+
+function vSet() {
+  const s = S.set;
+  return `<div class="card"><h3>Channel penjualan &amp; fee</h3>
+    <p class="note">Channel pertama dipakai sebagai "harga jual langsung". Isi fee sesuai kontrak mitra (angka awal hanya contoh).</p>
+    ${s.ch.map((c, i) => `<div class="ch"><input data-ch="${i}" data-k="nama" value="${esc(c.nama)}"><input type="number" inputmode="decimal" data-ch="${i}" data-k="fee" value="${c.fee}" aria-label="fee %"><button class="x" data-act="rm-ch" data-i="${i}">×</button></div>`).join('')}
+    <button class="btn ghost block" data-act="add-ch">+ Tambah channel</button></div>
+  <div class="card"><h3>Target &amp; biaya</h3>
+    <label>Margin "Aman" (% dari harga jual)<input type="number" inputmode="decimal" data-s="mA" value="${s.mA}"></label>
+    <label>Margin "Optimal" (% dari harga jual)<input type="number" inputmode="decimal" data-s="mO" value="${s.mO}"></label>
+    <label>Overhead (gas, listrik, dll) — % dari biaya bahan<input type="number" inputmode="decimal" data-s="oh" value="${s.oh}"></label>
+    <label>Pembulatan harga ke atas</label>
+    <div class="seg">${[1, 100, 500, 1000].map(r => `<button data-act="round" data-v="${r}" class="${num(s.round) === r ? 'on' : ''}">${r === 1 ? 'Tidak' : rp(r)}</button>`).join('')}</div></div>
+  <div class="card"><h3>Data</h3>
+    <button class="btn block" data-act="csv">Export CSV (buka di Excel/Sheets)</button>
+    <button class="btn ghost block" data-act="backup">Backup data (.json)</button>
+    <button class="btn ghost block" data-act="restore">Restore dari backup</button>
+    <button class="btn danger block" data-act="reset">Hapus semua data</button>
+    <p class="note">Data hanya tersimpan di browser perangkat ini. Menghapus data/cache browser akan menghapusnya — lakukan Backup secara rutin, dan pakai file backup untuk pindah ke HP/laptop lain.</p></div>`;
+}
+
+/* ===== Sheet editor ===== */
+let cur = null, mode = null;
+const sheet = document.getElementById('sheet'), panel = document.getElementById('panel');
+function openSheet(html) { panel.innerHTML = html; sheet.classList.add('open'); panel.scrollTop = 0; }
+function closeSheet() { sheet.classList.remove('open'); cur = null; mode = null; }
+
+function openMenu(id) {
+  const m = S.menu.find(x => x.id === id);
+  cur = m ? JSON.parse(JSON.stringify(m)) : { id: uid(), nama: '', yield: 1, harga: 0, items: [] };
+  cur._new = !m; mode = 'menu';
+  openSheet(`<h2>${cur._new ? 'Menu baru' : 'Edit menu'}</h2>
+    <label>Nama menu<input data-f="nama" value="${esc(cur.nama)}" placeholder="mis. Thai Tea"></label>
+    <label>Satu resep ini jadi berapa porsi?<input type="number" inputmode="decimal" data-f="yield" value="${cur.yield}"></label>
+    <h3>Komposisi untuk 1 resep</h3><div id="items"></div>
+    <button class="btn ghost block" data-act="add-item">+ Tambah bahan / kemasan</button>
+    <label>Harga jual saya (${esc(S.set.ch[0] ? S.set.ch[0].nama : 'langsung')})<input type="number" inputmode="numeric" data-f="harga" value="${num(cur.harga) || ''}" placeholder="opsional"></label>
+    <div id="result"></div>
+    <div class="actions">${cur._new ? '' : '<button class="btn danger" data-act="del-menu">Hapus</button>'}
+      <button class="btn ghost" data-act="close">Batal</button><button class="btn" data-act="save-menu">Simpan</button></div>`);
+  renderItems(); renderResult();
+}
+function renderItems() {
+  const el = document.getElementById('items');
+  if (!S.bahan.length) { el.innerHTML = '<p class="mute">Belum ada bahan. Tambahkan dulu di tab Bahan.</p>'; return; }
+  el.innerHTML = cur.items.length ? cur.items.map((it, i) => {
+    const b = S.bahan.find(x => x.id === it.bahanId);
+    return `<div class="item"><select data-i="${i}" data-k="bahanId">${S.bahan.map(x =>
+      `<option value="${x.id}" ${x.id === it.bahanId ? 'selected' : ''}>${esc(x.nama)}${x.kat === 'kemasan' ? ' 📦' : ''}</option>`).join('')}</select>
+      <div class="qty"><input type="number" inputmode="decimal" data-i="${i}" data-k="qty" value="${it.qty}"><span>${esc(b ? b.sat : '')}</span></div>
+      <button class="x" data-act="rm-item" data-i="${i}">×</button>
+      <span class="cost" id="cost${i}">${rp(b ? unitPrice(b) * num(it.qty) : 0)}</span></div>`;
+  }).join('') : '<p class="mute">Belum ada komposisi.</p>';
+}
+function renderResult() {
+  const c = calc(cur), h = num(cur.harga);
+  const rows = S.set.ch.map(ch => {
+    const p = h ? profit(h, c.hpp, ch.fee) : null;
+    return `<tr><td>${esc(ch.nama)}<small>fee ${num(ch.fee)}%</small></td><td>${fmtP(priceFor(c.hpp, ch.fee, 0))}</td>
+      <td>${fmtP(priceFor(c.hpp, ch.fee, S.set.mA))}</td><td><b>${fmtP(priceFor(c.hpp, ch.fee, S.set.mO))}</b></td></tr>
+      ${p ? `<tr class="sub"><td colspan="4">Kalau dijual ${rp(h)} di sini → untung <b class="${cls(p.margin)}">${rp(p.profit)} (${p.margin.toFixed(1)}%)</b></td></tr>` : ''}`;
+  }).join('');
+  document.getElementById('result').innerHTML = `<div class="hpp">
+    <div><span>Bahan / porsi</span><b>${rp(c.bahanP)}</b></div><div><span>Overhead ${num(S.set.oh)}%</span><b>${rp(c.oh)}</b></div>
+    <div><span>Kemasan / porsi</span><b>${rp(c.kemasanP)}</b></div><div class="tot"><span>HPP / porsi</span><b>${rp(c.hpp)}</b></div></div>
+    <h3>Rekomendasi harga jual</h3>
+    <table class="tbl"><thead><tr><th>Channel</th><th>Impas</th><th>Aman ${num(S.set.mA)}%</th><th>Optimal ${num(S.set.mO)}%</th></tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function openBahan(id) {
+  const b = S.bahan.find(x => x.id === id);
+  cur = b ? { ...b } : { id: uid(), nama: '', kat: 'bahan', harga: 0, qty: 1, sat: 'gr' };
+  cur._new = !b; mode = 'bahan';
+  openSheet(`<h2>${cur._new ? 'Bahan baru' : 'Edit bahan'}</h2>
+    <label>Nama<input data-f="nama" value="${esc(cur.nama)}" placeholder="mis. Gula pasir"></label>
+    <label>Jenis<select data-f="kat"><option value="bahan" ${cur.kat === 'bahan' ? 'selected' : ''}>Bahan baku (kena overhead)</option>
+      <option value="kemasan" ${cur.kat === 'kemasan' ? 'selected' : ''}>Kemasan (tanpa overhead)</option></select></label>
+    <label>Harga beli (Rp)<input type="number" inputmode="numeric" data-f="harga" value="${cur.harga || ''}"></label>
+    <label>Isi / jumlah yang didapat<input type="number" inputmode="decimal" data-f="qty" value="${cur.qty}"></label>
+    <label>Satuan (dipakai juga di resep)<input data-f="sat" value="${esc(cur.sat)}" placeholder="gr, ml, pcs, butir"></label>
+    <div class="unit" id="bunit"></div>
+    <div class="actions">${cur._new ? '' : '<button class="btn danger" data-act="del-bahan">Hapus</button>'}
+      <button class="btn ghost" data-act="close">Batal</button><button class="btn" data-act="save-bahan">Simpan</button></div>`);
+  renderUnit();
+}
+function renderUnit() {
+  const u = unitPrice(cur);
+  document.getElementById('bunit').textContent = `= ${'Rp' + u.toLocaleString('id-ID', { maximumFractionDigits: 2 })} per ${cur.sat || 'satuan'}`;
+}
+
+/* ===== Utilitas ===== */
+let tt;
+function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(tt); tt = setTimeout(() => t.classList.remove('on'), 2600); }
+function download(text, name, type) {
+  const url = URL.createObjectURL(new Blob([text], { type }));
+  const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 500);
+}
+function exportCSV() {
+  const dec = n => (n == null ? '' : String(n).replace('.', ','));
+  const head = ['Menu', 'Porsi per resep', 'HPP per porsi', 'Harga jual langsung', 'Margin langsung %'];
+  S.set.ch.forEach(ch => head.push(ch.nama + ' Impas', ch.nama + ' Aman', ch.nama + ' Optimal'));
+  const lines = [head];
+  S.menu.forEach(m => {
+    const c = calc(m), p = num(m.harga) ? profit(num(m.harga), c.hpp, baseFee()) : null;
+    const r = [m.nama, m.yield, Math.round(c.hpp), num(m.harga) || '', p ? dec(p.margin.toFixed(1)) : ''];
+    S.set.ch.forEach(ch => r.push(priceFor(c.hpp, ch.fee, 0) ?? '', priceFor(c.hpp, ch.fee, S.set.mA) ?? '', priceFor(c.hpp, ch.fee, S.set.mO) ?? ''));
+    lines.push(r);
+  });
+  // Pemisah titik-koma + BOM agar Excel berlocale Indonesia membuka kolom dengan benar
+  const csv = '﻿' + lines.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  download(csv, 'hpp-menu.csv', 'text/csv;charset=utf-8');
+}
+
+/* ===== Event ===== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-tab],[data-act],[data-open-menu],[data-open-bahan]');
+  if (e.target === sheet) return closeSheet();
+  if (!t) return;
+  if (t.dataset.tab) { tab = t.dataset.tab; return render(); }
+  if (t.dataset.openMenu) return openMenu(t.dataset.openMenu);
+  if (t.dataset.openBahan) return openBahan(t.dataset.openBahan);
+  const a = t.dataset.act, i = +t.dataset.i;
+  switch (a) {
+    case 'new-menu': return openMenu(null);
+    case 'new-bahan': return openBahan(null);
+    case 'close': return closeSheet();
+    case 'add-item':
+      if (!S.bahan.length) return toast('Tambahkan bahan dulu di tab Bahan');
+      cur.items.push({ bahanId: S.bahan[0].id, qty: 0 }); renderItems(); return renderResult();
+    case 'rm-item': cur.items.splice(i, 1); renderItems(); return renderResult();
+    case 'save-menu': {
+      if (!cur.nama.trim()) return toast('Nama menu belum diisi');
+      const isNew = cur._new; delete cur._new;
+      if (isNew) S.menu.push(cur); else S.menu[S.menu.findIndex(x => x.id === cur.id)] = cur;
+      save(); closeSheet(); render(); return toast('Menu disimpan');
+    }
+    case 'del-menu':
+      if (!confirm('Hapus menu ini?')) return;
+      S.menu = S.menu.filter(x => x.id !== cur.id); save(); closeSheet(); return render();
+    case 'save-bahan': {
+      if (!cur.nama.trim()) return toast('Nama bahan belum diisi');
+      if (num(cur.qty) <= 0) return toast('Isi/jumlah harus lebih dari 0');
+      const isNew = cur._new; delete cur._new;
+      if (isNew) S.bahan.push(cur); else S.bahan[S.bahan.findIndex(x => x.id === cur.id)] = cur;
+      save(); closeSheet(); render(); return toast('Bahan disimpan · HPP menu ikut diperbarui');
+    }
+    case 'del-bahan': {
+      const n = S.menu.filter(m => m.items.some(it => it.bahanId === cur.id)).length;
+      if (!confirm(n ? `Bahan ini dipakai di ${n} menu dan akan dihapus dari resepnya. Lanjut?` : 'Hapus bahan ini?')) return;
+      const id = cur.id;
+      S.bahan = S.bahan.filter(x => x.id !== id);
+      S.menu.forEach(m => { m.items = m.items.filter(it => it.bahanId !== id); });
+      save(); closeSheet(); return render();
+    }
+    case 'add-ch': S.set.ch.push({ nama: 'Channel baru', fee: 0 }); save(); return render();
+    case 'rm-ch':
+      if (S.set.ch.length <= 1) return toast('Minimal satu channel');
+      S.set.ch.splice(i, 1); save(); return render();
+    case 'round': S.set.round = +t.dataset.v; save(); return render();
+    case 'csv': return exportCSV();
+    case 'backup': {
+      const d = new Date().toISOString().slice(0, 10);
+      return download(JSON.stringify(S, null, 2), `backup-hpp-${d}.json`, 'application/json');
+    }
+    case 'restore': return document.getElementById('fileIn').click();
+    case 'reset':
+      if (!confirm('Hapus SEMUA bahan & menu? Pastikan sudah backup.')) return;
+      S = { set: S.set, bahan: [], menu: [] }; save(); return render();
+  }
+});
+
+document.addEventListener('input', e => {
+  const el = e.target, d = el.dataset;
+  const val = el.type === 'number' ? num(el.value) : el.value;
+  if (d.f && cur) {                       // field di sheet editor
+    cur[d.f] = val;
+    if (mode === 'menu') renderResult(); else if (mode === 'bahan') renderUnit();
+  } else if (d.i !== undefined && d.k && cur) {   // baris komposisi resep
+    const it = cur.items[+d.i]; it[d.k] = d.k === 'qty' ? num(el.value) : el.value;
+    if (d.k === 'bahanId') renderItems();
+    else { const b = S.bahan.find(x => x.id === it.bahanId); document.getElementById('cost' + d.i).textContent = rp(b ? unitPrice(b) * num(it.qty) : 0); }
+    renderResult();
+  } else if (d.s) { S.set[d.s] = val; save(); }    // pengaturan
+  else if (d.ch !== undefined) { S.set.ch[+d.ch][d.k] = d.k === 'fee' ? num(el.value) : el.value; save(); }
+  else if (el.id === 'q') {               // pencarian bahan, tanpa kehilangan fokus
+    q = el.value; const pos = el.selectionStart; render();
+    const n = document.getElementById('q'); n.focus(); n.setSelectionRange(pos, pos);
+  }
+});
+// <select> di beberapa browser HP hanya memicu "change"
+document.addEventListener('change', e => { if (e.target.tagName === 'SELECT') e.target.dispatchEvent(new Event('input', { bubbles: true })); }, true);
+
+document.getElementById('fileIn').addEventListener('change', e => {
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const d = JSON.parse(r.result);
+      if (!d.set || !Array.isArray(d.bahan) || !Array.isArray(d.menu)) throw 0;
+      if (!confirm('Timpa data sekarang dengan isi backup ini?')) return;
+      S = d; save(); render(); toast('Backup dipulihkan');
+    } catch (err) { toast('File backup tidak valid'); }
+    e.target.value = '';
+  };
+  r.readAsText(f);
+});
+
+render();
+</script>
+</body>
+</html>
